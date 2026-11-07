@@ -1,0 +1,359 @@
+CONTEXTO PARA CONSTRUIR LA APP DE SEGUIMIENTO DE ESCALADA
+==========================================================
+Fecha: 2026-11-07
+Autor del plan y usuario de la app: Ignacio
+Este archivo es autocontenido. Pégalo o adjúntalo en una sesión nueva para
+construir la app sin tener que repetir el contexto. Idioma de la app y de las
+respuestas: español.
+Documentos de origen (por si se quieren consultar):
+- 
+Plan de entrenamiento: https://claude.ai/artifact/SbKQxALQrMuftzVk1824oX
+- 
+Diseño de la app:      https://claude.ai/artifact/P7ZNz6qWrHwLv4sEfkhzzQ
+----------------------------------------------------------------------
+PARTE 1. ASPECTOS PERSONALES (EL ESCALADOR Y SU PLAN)
+----------------------------------------------------------------------
+1.1 Perfil
+- 
+28 años, 10 años escalando.
+- 
+Nivel actual: 12d (7c) en deportiva, V7 en boulder.
+- 
+Lesión: tendinitis recurrente del codo interno (epicondilitis medial /
+  
+codo de golfista). Ya probó rehabilitación clásica (isometría, reducir
+  
+pinza, bajar ángulo) sin buenos resultados. Lo que le funciona: escalar
+  
+normal pero con más tiempo de recuperación.
+- 
+Objetivo de referencia asumido: 13a/13b y V8.
+1.2 Filosofía de entrenamiento
+- 
+NO quiere planes rígidos. Entrena por OBJETIVOS: cada sesión tiene un
+  
+objetivo, una forma de saber si lo cumplió y cómo progresar. El contenido
+  
+concreto lo decide él el mismo día.
+- 
+Simple y funcional: el 20% que da el 80% del rendimiento.
+- 
+El físico se indica por grupos musculares, no por ejercicios específicos.
+- 
+Roca y día libre quedan sin indicación.
+1.3 Semana tipo
+- 
+Lunes: board (Kilter o Tension).
+- 
+Jueves: resistencia.
+- 
+Un día del fin de semana (viernes, sábado o domingo según disponibilidad):
+  
+libre, alterna entre roca y max boulder.
+- 
+2 días de físico en días sin escalada (máximo 1 h cada uno).
+- 
+3 días de escalada por defecto. Semana de 4 días solo si el codo está
+  
+tranquilo, y siempre seguida de descarga.
+- 
+Recuperación: unas 72 h entre días fuertes. Si escala dos días seguidos,
+  
+después descansa dos días enteros de escalada.
+- 
+Descarga cada 3 semanas (o antes si el codo o las ganas lo piden):
+  
+volumen a la mitad, sin ir al límite.
+1.4 Calentamiento (todas las sesiones de escalada, 30-45 min)
+- 
+Movilidad y elongación.
+- 
+Fuerza específica de core y espalda.
+- 
+Tabla multipresa: half crimp y pinza, subiendo el esfuerzo.
+- 
+Escalada progresiva.
+1.5 Objetivo de cada sesión
+| Sesión | Objetivo | Lo cumpliste si... | Cómo progresar |
+- 
+Board (Kilter o Tension), ~2.5 h
+    
+Objetivo: fuerza y potencia en movimientos límite.
+    
+Cumplido si: encadenas al menos 1 problema de tu máximo, o sacas todos
+    
+los movimientos de uno más duro.
+    
+Progresar: sube un grado el rango de trabajo, o el ángulo 5°.
+- 
+Fuerza de dedos (half crimp y pinza), dentro de board y max boulder
+    
+Objetivo: subir la carga poco a poco.
+    
+Cumplido si: todas las series de 10 s con 2-3 s de margen.
+    
+Progresar: suma 1-2 kg.
+- 
+Resistencia, ~2.5 h
+    
+Objetivo: aguantar más escalada continua con buena técnica.
+    
+Cumplido si: completas el formato elegido (4x4, intervalos o vías)
+    
+cayéndote como máximo una vez.
+    
+Progresar: cambia una sola cosa: más grado, menos descanso o una ronda más.
+- 
+Max boulder, duración libre (2.5-3.5 h)
+    
+Objetivo: escalar al límite en estilos variados.
+    
+Cumplido si: encadenas un V7 o más, o avanzas claramente en un V8.
+    
+Tocaste al menos 3 estilos.
+    
+Progresar: cuando los V7 salgan en 1-2 sesiones, pasa a trabajar V8.
+    
+Meter siempre al menos un bloque de tu estilo más débil.
+- 
+Roca o día libre: sin indicación.
+Volumen de referencia:
+- 
+Día suave: 10 V3 + 5 V4.
+- 
+Día fuerte: 10 V4 + 10 V5 + 5 V6.
+1.6 Físico por grupos musculares (máx 1 h: 20 min trote suave + ~35 min fuerza,
+1 ejercicio por grupo)
+- 
+Físico A: cadera y piernas en fuerza (paso alto, taloneo) 3x6-10;
+  
+empuje y hombro 3x6-10; core de compresión 3x8-12.
+- 
+Físico B: cadera en apertura y aductores 3x6-10; manguito rotador y
+  
+antebrazo (extensores) 2x15; core antirotación 3x8-12.
+- 
+Opcional: 10 min de curl de muñeca lento para el codo. Probar 6 semanas;
+  
+si no nota diferencia, sacarlo.
+1.7 Reglas de progresión (sobrecarga progresiva, una variable a la vez)
+1. 
+Cumpliste el objetivo 2 sesiones seguidas -> SUBE (más grado, formato más
+   
+duro, +1-2 kg en tabla; en físico, al llegar al tope de reps en todas las
+   
+series, sube peso y vuelve al mínimo de reps).
+2. 
+Lo cumpliste a medias -> REPITE.
+3. 
+Fallaste 2 sesiones seguidas o te molesta el codo -> BAJA un paso y suma
+   
+un día de descanso.
+Qué anotar tras cada sesión: grado o carga máxima, si cumplió el objetivo,
+dolor del codo de 0 a 10. En cada descarga: revisar notas, hacer una prueba
+(máximo half crimp a 10 s y grado máximo en board) y elegir foco para las
+próximas 3 semanas: fuerza, resistencia o roca.
+1.8 Señales para parar
+- 
+Dolor puntual en la base de un dedo, sobre todo en arqué.
+- 
+El codo pasa de 3/10 o la molestia sigue al día siguiente.
+- 
+Dos semanas seguidas rindiendo peor, durmiendo mal o sin ganas:
+  
+adelantar la descarga.
+----------------------------------------------------------------------
+PARTE 2. ASPECTOS TÉCNICOS (DISEÑO DE LA APP)
+----------------------------------------------------------------------
+Estado: diseño propuesto, pendiente de confirmación de Ignacio. Aún no hay
+código ni repositorio.
+2.1 Resumen
+- 
+App web en HTML, CSS y JavaScript simple, sin frameworks.
+- 
+Instalable en el celular como PWA (manifest + service worker).
+- 
+Debe usarse desde celular y computador.
+- 
+Datos en Firebase Firestore con login de Google: sincroniza en tiempo real
+  
+entre dispositivos y funciona sin señal (persistencia offline de Firestore).
+- 
+Registrar una sesión debe tomar menos de 1 minuto.
+- 
+La app calcula y muestra cuándo subir, repetir o bajar en cada objetivo.
+2.2 Qué se registra por tipo de sesión
+- 
+Board: tablero (Kilter/Tension), ángulo, grado máximo encadenado, grado
+  
+trabajado. Opcional: nombres de problemas, intentos.
+- 
+Fuerza de dedos: agarre (half crimp / pinza), kg (peso o lastre), segundos,
+  
+series, margen. Opcional: tamaño de regleta en mm.
+- 
+Resistencia: formato (4x4, intervalos, vías), grado, rondas, descanso,
+  
+caídas. Opcional: duración de cada bloque.
+- 
+Max boulder: bloques por grado y si se encadenaron, estilos tocados.
+  
+Opcional: proyecto en curso y avance.
+- 
+Roca o día libre: lugar, nota libre. Opcional: vías/bloques encadenados.
+- 
+Físico A o B: grupo muscular, peso, series x reps, trote (min).
+  
+Opcional: ejercicio elegido.
+Comunes a todas al cierre:
+- 
+Objetivo: cumplido / a medias / no cumplido.
+- 
+Codo: dolor 0-10 durante, y 0-10 al día siguiente.
+- 
+Esfuerzo percibido 1-10 y duración en minutos.
+- 
+Nota libre corta.
+En cada descarga: prueba (half crimp 10 s en kg, pinza kg, grado máximo
+board) y foco de las próximas 3 semanas.
+2.3 Pantallas (barra de navegación abajo en celular, a la izquierda en PC)
+1. 
+Hoy: botón grande "Registrar sesión", qué toca según el día, tarjeta por
+   
+objetivo con su estado (subir/repetir/bajar). Avisos si el codo pasó de
+   
+3/10 o si van 3 semanas sin descarga.
+2. 
+Registrar sesión: elegir tipo y mostrar solo su formulario. Botones
+   
+grandes en vez de teclear (grados V3-V9, +/-1 kg, codo 0-10). Se puede
+   
+guardar a medias y completar después.
+3. 
+Historial: sesiones por semana, filtro por tipo; abrir, editar, borrar.
+4. 
+Progreso: gráficos de carga en half crimp y pinza, grado máximo en board
+   
+y max boulder, volumen semanal, dolor de codo en el tiempo, pruebas.
+5. 
+Ajustes: objetivos y reglas editables, días de la semana, cuenta de
+   
+Google, exportar/importar JSON o CSV.
+2.4 Modelo de datos (Firestore, todo bajo users/{uid}/...)
+- 
+sessions: fecha, tipo (board | dedos | resistencia | max_boulder | roca |
+  
+fisico), objetivoId, resultado (cumplido | medias | no), codo,
+  
+codoDiaSiguiente, esfuerzo, duracionMin, nota, detalle (objeto que cambia
+  
+según el tipo).
+- 
+objectives: nombre, tipo, criterio ("lo cumpliste si..."), nivelActual
+  
+(ej. "V7" o "22 kg"), paso (cuánto se sube), activo.
+- 
+tests: fecha, halfCrimp10sKg, pinzaKg, boardMax, nota.
+- 
+cycles: inicio, foco (fuerza | resistencia | roca), descarga (fecha).
+Ejemplos de "detalle":
+  
+Fuerza de dedos:
+  
+{
+    
+"agarre": "half_crimp",
+    
+"regletaMm": 20,
+    
+"series": [{ "kg": 22, "seg": 10, "margenSeg": 3 }]
+  
+}
+  
+Max boulder:
+  
+{ "bloques": [{ "grado": "V7", "encadenado": true, "estilo": "pinza" }] }
+La regla de progresión NO se guarda: se calcula al abrir la app mirando las
+2 últimas sesiones de cada objetivo. Dos cumplidas -> sugerir subir. Dos
+fallidas o codo > 3 -> sugerir bajar. Si no -> repetir.
+Reglas de seguridad de Firestore: cada usuario solo lee y escribe
+users/{su uid}/**.
+2.5 Opciones de almacenamiento evaluadas
+- 
+Firebase Firestore (RECOMENDADA): sincroniza en tiempo real, offline de
+  
+serie, gratis para este volumen, se usa desde HTML con el SDK por CDN.
+  
+Contra: es de Google y no es SQL.
+- 
+Supabase (Postgres): sincroniza, pero el modo sin señal hay que
+  
+programarlo; el plan gratis pausa el proyecto tras ~1 semana sin uso.
+- 
+Google Sheets + Apps Script: gratis, pero lento y sin offline.
+- 
+Solo navegador (IndexedDB): lo más simple, pero no sincroniza entre
+  
+dispositivos.
+(Las cuotas y límites están dichos de memoria; confirmarlos al configurar.)
+Respaldo: botón para exportar todo a JSON o CSV.
+2.6 Arquitectura
+- 
+Sin servidor propio. Sitio estático alojado gratis en GitHub Pages.
+- 
+Celular / Computador -> App web (PWA) -> copia local (caché offline de
+  
+Firestore) <-> Firestore en la nube. Login con Google (Firebase Auth).
+- 
+La app escribe primero en la copia local y Firestore la sube cuando hay
+  
+señal.
+- 
+Gráficos con Chart.js desde CDN. Nada más externo.
+- 
+Todo el acceso a datos en js/db.js, para poder cambiar de backend tocando
+  
+un solo archivo.
+Estructura de archivos:
+  
+app-escalada/
+    
+index.html          pantallas y navegación
+    
+manifest.json       para instalarla en el celular
+    
+sw.js               funciona sin señal (service worker)
+    
+css/estilos.css     diseño para celular primero
+    
+js/app.js           arranque y navegación entre pantallas
+    
+js/db.js            todo lo de Firebase en un solo lugar
+    
+js/formularios.js   un formulario por tipo de sesión
+    
+js/progreso.js      regla de progresión y gráficos
+2.7 Plan de construcción
+1. 
+Versión 1, registrar: pantallas Hoy, Registrar e Historial, con login de
+   
+Google y Firestore.
+2. 
+Versión 2, progresar: objetivos editables, regla subir/repetir/bajar,
+   
+avisos de codo y descarga, pruebas.
+3. 
+Versión 3, ver: pantalla Progreso con gráficos y exportar a CSV.
+Requisitos para publicar: un repositorio en GitHub (lo crea Ignacio) y un
+proyecto de Firebase (gratis, con su cuenta de Google; activar
+Authentication con proveedor Google y Firestore, y agregar el dominio de
+GitHub Pages a los dominios autorizados).
+2.8 Preguntas abiertas (pendientes de respuesta)
+- 
+¿Firebase está bien, o prefiere los datos en algo que pueda abrir directo
+  
+(ej. Google Sheets)?
+- 
+¿Registrar cada serie de tabla y cada bloque, o basta con el máximo del día?
+- 
+¿La usará solo él, o también otras personas con su propia cuenta?

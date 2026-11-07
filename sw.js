@@ -5,7 +5,7 @@
 // bajar la versión nueva para la próxima vez ("stale-while-revalidate").
 // Cambia VERSION cuando quieras forzar que todos bajen archivos nuevos.
 
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE = `bitacora-${VERSION}`;
 const SDK = "https://www.gstatic.com/firebasejs/10.12.2";
 

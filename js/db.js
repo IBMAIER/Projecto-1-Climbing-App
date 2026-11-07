@@ -78,7 +78,7 @@ function ordenar(lista) {
   );
 }
 
-export function escucharSesiones(callback) {
+export function escucharSesiones(callback, alError = () => {}) {
   if (modoLocal) {
     oyentesLocales.add(callback);
     callback(ordenar(leerLocal()));
@@ -91,7 +91,10 @@ export function escucharSesiones(callback) {
   return fb.onSnapshot(
     ref,
     (snap) => callback(ordenar(snap.docs.map((d) => ({ id: d.id, ...d.data() })))),
-    (err) => console.error("Error leyendo sesiones:", err)
+    (err) => {
+      console.error("Error leyendo sesiones:", err);
+      alError(err);
+    }
   );
 }
 

@@ -1,11 +1,14 @@
 rules_version = '2';
 
-// Cada usuario solo puede leer y escribir sus propios datos,
-// guardados bajo users/{su uid}/...
+// Solo la cuenta de Google del dueño puede usar la app, y solo dentro de
+// users/{su uid}/... Cualquier otra cuenta recibe "permiso denegado".
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if request.auth != null
+        && request.auth.uid == uid
+        && request.auth.token.email == "ignaciobenavides809@gmail.com"
+        && request.auth.token.email_verified == true;
     }
   }
 }

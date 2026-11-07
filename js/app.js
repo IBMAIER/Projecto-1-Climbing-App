@@ -69,12 +69,21 @@ function alCambiarUsuario(u) {
 
   // Evento: cada vez que cambian las sesiones, se actualiza la pantalla
   // (salvo el formulario, para no borrar lo que estás escribiendo).
-  dejarDeEscuchar = db.escucharSesiones((lista) => {
-    sesiones = lista;
-    if (!pantallaActual().startsWith("registrar") && !pantallaActual().startsWith("editar")) {
-      mostrarPantalla();
+  dejarDeEscuchar = db.escucharSesiones(
+    (lista) => {
+      sesiones = lista;
+      if (!pantallaActual().startsWith("registrar") && !pantallaActual().startsWith("editar")) {
+        mostrarPantalla();
+      }
+    },
+    (err) => {
+      const msg = err.code === "permission-denied"
+        ? `La cuenta ${esc(u.email)} no tiene permiso para usar esta app.`
+        : `No se pudieron cargar los datos (${esc(err.code || err.message)}).`;
+      vista.innerHTML = `<div class="tarjeta aviso">${msg}</div>
+        <button class="secundario" data-app="salir">Cambiar de cuenta</button>`;
     }
-  });
+  );
   mostrarPantalla();
 }
 

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bitácora de escalada</title>
+  <meta name="theme-color" content="#1f6f5c">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="iconos/icono-192.png">
+  <link rel="apple-touch-icon" href="iconos/icono-192.png">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body class="sin-usuario">
+  <header>
+    <span class="marca">🧗 Bitácora</span>
+    <span id="usuario"></span>
+  </header>
+
+  <div id="aviso-local" class="aviso-local" hidden>
+    Modo local: los datos se guardan solo en este dispositivo hasta conectar Firebase.
+  </div>
+
+  <nav>
+    <a href="#hoy"><span>🏠</span>Hoy</a>
+    <a href="#registrar"><span>➕</span>Registrar</a>
+    <a href="#historial"><span>📋</span>Historial</a>
+  </nav>
+
+  <main id="vista">
+    <p class="vacio">Cargando…</p>
+  </main>
+
+  <!-- Punto de entrada del código. type="module" permite usar import/export. -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

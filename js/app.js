@@ -35,8 +35,22 @@ let filtroHistorial = "todos";
 // Arranque
 // ---------------------------------------------------------------------------
 
+export const VERSION_APP = "v4";
+
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js").catch((e) => console.warn("Service worker:", e));
+  navigator.serviceWorker
+    .register("./sw.js", { updateViaCache: "none" })
+    .then((reg) => reg.update())
+    .catch((e) => console.warn("Service worker:", e));
+
+  // Cuando se instala una versión nueva, recargar una vez para usarla.
+  let recargando = false;
+  const habiaControlador = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!habiaControlador || recargando) return;
+    recargando = true;
+    location.reload();
+  });
 }
 
 db.iniciar(alCambiarUsuario).catch((e) => {
@@ -68,6 +82,7 @@ function alCambiarUsuario(u) {
   $("#usuario").innerHTML = u
     ? `${esc(u.nombre || u.email)}${db.modoLocal ? "" : ` · <button class="link" data-app="salir">Salir</button>`}`
     : "";
+  $("#version").textContent = VERSION_APP;
   $("#aviso-local").hidden = !db.modoLocal;
 
   if (!u) {

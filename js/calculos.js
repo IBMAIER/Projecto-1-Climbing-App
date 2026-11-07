@@ -1,36 +1,93 @@
-// calculos.js: datos fijos y cálculos que no dependen de la pantalla.
+// calculos.js: datos fijos del plan y cálculos que no dependen de la pantalla.
+
+// ---------------------------------------------------------------------------
+// Grados
+// ---------------------------------------------------------------------------
 
 export const GRADOS = ["V0", "V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10"];
 
-export const TIPOS = {
-  board:       { nombre: "Board",           icono: "🧗", escalada: true },
-  dedos:       { nombre: "Fuerza de dedos", icono: "✊", escalada: false },
-  resistencia: { nombre: "Resistencia",     icono: "🔁", escalada: true },
-  max_boulder: { nombre: "Max boulder",     icono: "🔥", escalada: true },
-  roca:        { nombre: "Roca / libre",    icono: "⛰️", escalada: true },
-  fisico:      { nombre: "Físico",          icono: "🏋️", escalada: false },
+// Vías de deportiva: grado YDS, equivalente francés y equivalencia en V para
+// calcular intensidad. La equivalencia está anclada a tu nivel actual
+// (5.12d / 7c ≈ V7). Es una aproximación: ajusta los valores "v" si lo
+// sientes distinto.
+export const VIAS = [
+  { yds: "5.9",   fr: "5c",  v: 0 },
+  { yds: "5.10a", fr: "6a",  v: 0 },
+  { yds: "5.10b", fr: "6a+", v: 0.5 },
+  { yds: "5.10c", fr: "6b",  v: 1 },
+  { yds: "5.10d", fr: "6b+", v: 1.5 },
+  { yds: "5.11a", fr: "6c",  v: 2 },
+  { yds: "5.11b", fr: "6c",  v: 2.5 },
+  { yds: "5.11c", fr: "6c+", v: 3 },
+  { yds: "5.11d", fr: "7a",  v: 4 },
+  { yds: "5.12a", fr: "7a+", v: 4.5 },
+  { yds: "5.12b", fr: "7b",  v: 5 },
+  { yds: "5.12c", fr: "7b+", v: 6 },
+  { yds: "5.12d", fr: "7c",  v: 7 },
+  { yds: "5.13a", fr: "7c+", v: 7.5 },
+  { yds: "5.13b", fr: "8a",  v: 8 },
+  { yds: "5.13c", fr: "8a+", v: 9 },
+  { yds: "5.13d", fr: "8b",  v: 10 },
+  { yds: "5.14a", fr: "8b+", v: 11 },
+];
+
+// Cuántos "bloques" vale una vía en la intensidad. 1 = una vía cuenta como
+// un bloque de su grado equivalente.
+export const FACTOR_VIA = 1;
+
+const VIA_POR_YDS = Object.fromEntries(VIAS.map((x) => [x.yds, x]));
+
+export function numeroGrado(grado) {
+  return parseInt(String(grado).replace(/\D/g, ""), 10) || 0;
+}
+
+export function equivalenteVia(yds) {
+  return VIA_POR_YDS[yds]?.v ?? 0;
+}
+
+export function nombreVia(yds) {
+  const x = VIA_POR_YDS[yds];
+  return x ? `${x.yds} (${x.fr})` : yds;
+}
+
+function indiceVia(yds) {
+  return VIAS.findIndex((x) => x.yds === yds);
+}
+
+// ---------------------------------------------------------------------------
+// Bloques (las partes de una sesión)
+// ---------------------------------------------------------------------------
+
+export const TIPOS_BLOQUE = {
+  calentamiento: { nombre: "Calentamiento", icono: "🤸", duracion: 40,
+    pista: "Movilidad, core y espalda, multipresa subiendo el esfuerzo y escalada progresiva." },
+  dedos: { nombre: "Fuerza de dedos", icono: "✊", duracion: 20,
+    pista: "Cumplido si todas las series de 10 s salen con 2-3 s de margen. Progresar: +1-2 kg." },
+  board: { nombre: "Board", icono: "🧗", duracion: 90,
+    pista: "Cumplido si encadenas 1 problema de tu máximo o sacas todos los movimientos de uno más duro." },
+  boulder: { nombre: "Boulder", icono: "🔥", duracion: 120,
+    pista: "Al menos 3 estilos y un bloque de tu estilo más débil." },
+  resistencia: { nombre: "Resistencia", icono: "🔁", duracion: 90,
+    pista: "Cumplido si completas el formato cayéndote como máximo una vez." },
+  vias: { nombre: "Vías (deportiva)", icono: "🪢", duracion: 120, pista: "" },
+  roca: { nombre: "Roca", icono: "⛰️", duracion: 180, pista: "" },
+  fisico: { nombre: "Físico", icono: "🏋️", duracion: 60,
+    pista: "20 min de trote suave + ~35 min de fuerza, 1 ejercicio por grupo." },
+  test: { nombre: "Test máximo", icono: "📏", duracion: 30,
+    pista: "Máximo half crimp 10 s, pinza y grado máximo en board." },
+  otro: { nombre: "Otro", icono: "➕", duracion: 30, pista: "" },
 };
 
-export const RESULTADOS = {
-  cumplido: "Cumplido",
-  medias: "A medias",
-  no: "No cumplido",
-};
+export const PARTES_CALENTAMIENTO = [
+  ["movilidad", "Movilidad y elongación"],
+  ["core", "Core y espalda"],
+  ["multipresa", "Multipresa (half crimp y pinza)"],
+  ["progresiva", "Escalada progresiva"],
+];
 
 export const ESTILOS = [
   "regletas", "pinzas", "romos", "compresión", "dinámico", "placa", "desplome", "técnico",
 ];
-
-// Qué toca cada día de la semana (0 = domingo).
-export const PLAN_SEMANA = {
-  0: "Libre: roca o max boulder",
-  1: "Board (Kilter o Tension)",
-  2: "Físico o descanso",
-  3: "Físico o descanso",
-  4: "Resistencia",
-  5: "Libre: roca o max boulder",
-  6: "Libre: roca o max boulder",
-};
 
 export const FISICO = {
   A: [
@@ -45,31 +102,267 @@ export const FISICO = {
   ],
 };
 
-// "V7" -> 7
-export function numeroGrado(grado) {
-  return parseInt(String(grado).replace(/\D/g, ""), 10) || 0;
+// ---------------------------------------------------------------------------
+// Días prediseñados (plantillas) y plan semanal
+// ---------------------------------------------------------------------------
+
+export const PLANTILLAS = {
+  board: {
+    nombre: "Board", icono: "🧗", escalada: true,
+    bloques: [{ tipo: "calentamiento" }, { tipo: "dedos" }, { tipo: "board" }],
+    objetivo: "Fuerza y potencia en movimientos límite.",
+    criterio: "Encadenas al menos 1 problema de tu máximo, o sacas todos los movimientos de uno más duro.",
+    progresar: "Sube un grado el rango de trabajo, o el ángulo 5°.",
+  },
+  resistencia: {
+    nombre: "Resistencia", icono: "🔁", escalada: true,
+    bloques: [{ tipo: "calentamiento" }, { tipo: "resistencia" }],
+    objetivo: "Aguantar más escalada continua con buena técnica.",
+    criterio: "Completas el formato elegido (4x4, intervalos o vías) cayéndote como máximo una vez.",
+    progresar: "Cambia una sola cosa: más grado, menos descanso o una ronda más.",
+  },
+  max_boulder: {
+    nombre: "Max boulder", icono: "🔥", escalada: true,
+    bloques: [{ tipo: "calentamiento" }, { tipo: "dedos" }, { tipo: "boulder" }],
+    objetivo: "Escalar al límite en estilos variados.",
+    criterio: "Encadenas un V7 o más, o avanzas claramente en un V8. Tocaste al menos 3 estilos.",
+    progresar: "Cuando los V7 salgan en 1-2 sesiones, pasa a trabajar V8.",
+  },
+  roca: {
+    nombre: "Roca", icono: "⛰️", escalada: true,
+    bloques: [{ tipo: "calentamiento" }, { tipo: "roca" }],
+    objetivo: "Día libre en roca.", criterio: "Sin indicación.", progresar: "",
+  },
+  fisico_a: {
+    nombre: "Físico A", icono: "🏋️", escalada: false,
+    bloques: [{ tipo: "fisico", variante: "A" }],
+    objetivo: "Cadera y piernas, empuje y hombro, core de compresión.",
+    criterio: "Completas todas las series.",
+    progresar: "Al llegar al tope de reps en todas las series, sube peso y vuelve al mínimo de reps.",
+  },
+  fisico_b: {
+    nombre: "Físico B", icono: "🏋️", escalada: false,
+    bloques: [{ tipo: "fisico", variante: "B" }],
+    objetivo: "Cadera en apertura, manguito rotador y antebrazo, core antirotación.",
+    criterio: "Completas todas las series.",
+    progresar: "Al llegar al tope de reps en todas las series, sube peso y vuelve al mínimo de reps.",
+  },
+  test: {
+    nombre: "Test máximo", icono: "📏", escalada: true,
+    bloques: [{ tipo: "calentamiento" }, { tipo: "test" }],
+    objetivo: "Medir tu máximo y elegir el foco de las próximas 3 semanas.",
+    criterio: "Completas half crimp 10 s, pinza y grado máximo en board.",
+    progresar: "",
+  },
+  libre: {
+    nombre: "Sesión libre", icono: "📝", escalada: false,
+    bloques: [],
+    objetivo: "", criterio: "", progresar: "",
+  },
+};
+
+// Qué toca cada día (0 = domingo). Lista vacía = descanso.
+// El sábado tiene dos opciones: roca o max boulder.
+export const PLAN_SEMANA = {
+  0: [],
+  1: ["board"],
+  2: ["fisico_a"],
+  3: [],
+  4: ["resistencia"],
+  5: ["fisico_b"],
+  6: ["roca", "max_boulder"],
+};
+
+export function planDelDia(iso) {
+  return PLAN_SEMANA[desdeISO(iso).getDay()] || [];
 }
 
-// Intensidad = Σ (bloques encadenados en el grado × número del grado).
-// Devuelve null para sesiones sin bloques (dedos, físico).
+export function esEscalada(sesion) {
+  return (sesion.bloques || []).some((b) =>
+    ["board", "boulder", "resistencia", "vias", "roca", "test"].includes(b.tipo));
+}
+
+// ---------------------------------------------------------------------------
+// Sesiones antiguas (versión 1) -> formato por bloques
+// ---------------------------------------------------------------------------
+
+const V1 = {
+  board: ["board", "board"],
+  dedos: ["libre", "dedos"],
+  resistencia: ["resistencia", "resistencia"],
+  max_boulder: ["max_boulder", "boulder"],
+  roca: ["roca", "roca"],
+};
+
+export function normalizar(s) {
+  if (Array.isArray(s.bloques)) return s;
+  const det = s.detalle || {};
+  let tipo, bloque;
+  if (s.tipo === "fisico") {
+    tipo = det.variante === "B" ? "fisico_b" : "fisico_a";
+    bloque = "fisico";
+  } else {
+    [tipo, bloque] = V1[s.tipo] || ["libre", "otro"];
+  }
+  const { detalle, ...resto } = s;
+  return {
+    ...resto,
+    tipo,
+    bloques: [{ id: "b1", tipo: bloque, duracionMin: s.duracionMin || 0, ...det }],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Intensidad y máximos
+// ---------------------------------------------------------------------------
+
+const sumar = (obj, valor) =>
+  Object.entries(obj || {}).reduce((t, [g, n]) => t + n * valor(g), 0);
+
+// Intensidad = Σ bloques × grado V  +  Σ vías × equivalente V × FACTOR_VIA
+// Devuelve null si la sesión no tiene bloques con grados.
+export function intensidadBloque(b) {
+  if (!b.grados && !b.vias) return null;
+  const total = sumar(b.grados, numeroGrado) + FACTOR_VIA * sumar(b.vias, equivalenteVia);
+  return Math.round(total * 10) / 10;
+}
+
 export function intensidad(sesion) {
-  const grados = sesion.detalle?.grados;
-  if (!grados) return null;
-  return Object.entries(grados).reduce((t, [g, n]) => t + n * numeroGrado(g), 0);
+  const valores = (sesion.bloques || []).map(intensidadBloque).filter((x) => x != null);
+  if (!valores.length) return null;
+  return Math.round(valores.reduce((a, b) => a + b, 0) * 10) / 10;
 }
 
-export function totalBloques(sesion) {
-  const grados = sesion.detalle?.grados;
-  if (!grados) return 0;
-  return Object.values(grados).reduce((t, n) => t + n, 0);
+export function duracionTotal(sesion) {
+  return (sesion.bloques || []).reduce((t, b) => t + (Number(b.duracionMin) || 0), 0);
 }
 
-export function gradoMaximo(sesion) {
-  const grados = sesion.detalle?.grados;
-  if (!grados) return null;
-  const conBloques = Object.keys(grados).filter((g) => grados[g] > 0);
-  if (!conBloques.length) return null;
-  return conBloques.sort((a, b) => numeroGrado(b) - numeroGrado(a))[0];
+export function totalBloques(b) {
+  return Object.values(b.grados || {}).reduce((t, n) => t + n, 0);
+}
+
+export function totalVias(b) {
+  return Object.values(b.vias || {}).reduce((t, n) => t + n, 0);
+}
+
+// Grado V más alto con al menos un bloque, en uno o varios bloques.
+export function gradoMaximo(...bloques) {
+  let max = null;
+  for (const b of bloques) {
+    for (const [g, n] of Object.entries(b?.grados || {})) {
+      if (n > 0 && (max == null || numeroGrado(g) > numeroGrado(max))) max = g;
+    }
+  }
+  return max;
+}
+
+export function viaMaxima(...bloques) {
+  let max = null;
+  for (const b of bloques) {
+    for (const [g, n] of Object.entries(b?.vias || {})) {
+      if (n > 0 && (max == null || indiceVia(g) > indiceVia(max))) max = g;
+    }
+  }
+  return max;
+}
+
+// ---------------------------------------------------------------------------
+// Benchmarks del entrenamiento y tests
+// ---------------------------------------------------------------------------
+
+function bloquesDe(sesiones, tipos) {
+  const lista = [];
+  for (const s of sesiones) {
+    for (const b of s.bloques || []) if (tipos.includes(b.tipo)) lista.push({ s, b });
+  }
+  return lista; // sesiones vienen de la más reciente a la más antigua
+}
+
+function haceDias(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return aISO(d);
+}
+
+// Mejor carga de dedos por agarre: { mejor, ultima, ultimos30 }
+export function benchmarkDedos(sesiones, agarre) {
+  const datos = bloquesDe(sesiones, ["dedos"])
+    .map(({ s, b }) => {
+      const kgs = (b.series || []).filter((x) => x.agarre === agarre).map((x) => Number(x.kg));
+      return kgs.length ? { fecha: s.fecha, kg: Math.max(...kgs), mm: b.regletaMm } : null;
+    })
+    .filter(Boolean);
+  if (!datos.length) return null;
+  const mejor = datos.reduce((a, b) => (b.kg > a.kg ? b : a));
+  const recientes = datos.filter((d) => d.fecha >= haceDias(30));
+  return {
+    mejor,
+    ultima: datos[0],
+    ultimos30: recientes.length ? recientes.reduce((a, b) => (b.kg > a.kg ? b : a)) : null,
+  };
+}
+
+// Grado máximo encadenado en un tipo de bloque.
+export function benchmarkGrado(sesiones, tipos) {
+  const datos = bloquesDe(sesiones, tipos)
+    .map(({ s, b }) => ({ fecha: s.fecha, grado: gradoMaximo(b), b }))
+    .filter((x) => x.grado);
+  if (!datos.length) return null;
+  const mejor = datos.reduce((a, b) => (numeroGrado(b.grado) > numeroGrado(a.grado) ? b : a));
+  const recientes = datos.filter((d) => d.fecha >= haceDias(30));
+  const mejor30 = recientes.length
+    ? recientes.reduce((a, b) => (numeroGrado(b.grado) > numeroGrado(a.grado) ? b : a))
+    : null;
+  return { mejor, ultima: datos[0], ultimos30: mejor30 };
+}
+
+export function benchmarkVias(sesiones) {
+  const datos = bloquesDe(sesiones, ["vias", "roca", "resistencia"])
+    .map(({ s, b }) => ({ fecha: s.fecha, grado: viaMaxima(b) }))
+    .filter((x) => x.grado);
+  if (!datos.length) return null;
+  const mejor = datos.reduce((a, b) => (indiceVia(b.grado) > indiceVia(a.grado) ? b : a));
+  const recientes = datos.filter((d) => d.fecha >= haceDias(30));
+  const mejor30 = recientes.length
+    ? recientes.reduce((a, b) => (indiceVia(b.grado) > indiceVia(a.grado) ? b : a))
+    : null;
+  return { mejor, ultima: datos[0], ultimos30: mejor30 };
+}
+
+export function benchmarkResistencia(sesiones) {
+  const datos = bloquesDe(sesiones, ["resistencia"]).map(({ s, b }) => ({ fecha: s.fecha, b }));
+  if (!datos.length) return null;
+  // "Mejor" = mayor intensidad completada con 1 caída o menos.
+  const validas = datos.filter((x) => (x.b.caidas || 0) <= 1);
+  const mejor = validas.length
+    ? validas.reduce((a, b) => ((intensidadBloque(b.b) || 0) > (intensidadBloque(a.b) || 0) ? b : a))
+    : null;
+  return { ultima: datos[0], mejor };
+}
+
+// Lista de tests máximos, del más reciente al más antiguo.
+export function tests(sesiones) {
+  return bloquesDe(sesiones, ["test"]).map(({ s, b }) => ({ fecha: s.fecha, ...b }));
+}
+
+// Promedio de intensidad por día de escalada en una ventana de días.
+export function intensidadPromedio(sesiones, desdeDias, hastaDias = 0) {
+  const desde = haceDias(desdeDias);
+  const hasta = haceDias(hastaDias);
+  const porDia = intensidadPorDia(sesiones.filter((s) => s.fecha > desde && s.fecha <= hasta));
+  const dias = Object.values(porDia);
+  if (!dias.length) return null;
+  return Math.round(dias.reduce((a, b) => a + b, 0) / dias.length);
+}
+
+// { "2026-11-07": 120, ... } solo días con intensidad > 0.
+export function intensidadPorDia(sesiones) {
+  const porDia = {};
+  for (const s of sesiones) {
+    const i = intensidad(s);
+    if (i) porDia[s.fecha] = (porDia[s.fecha] || 0) + i;
+  }
+  return porDia;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,12 +385,16 @@ export function desdeISO(iso) {
   return new Date(y, m - 1, d);
 }
 
+export function sumarDias(iso, n) {
+  const d = desdeISO(iso);
+  d.setDate(d.getDate() + n);
+  return aISO(d);
+}
+
 // Lunes de la semana de una fecha "YYYY-MM-DD".
 export function lunesDe(iso) {
   const d = desdeISO(iso);
-  const dia = (d.getDay() + 6) % 7; // lunes = 0
-  d.setDate(d.getDate() - dia);
-  return aISO(d);
+  return sumarDias(iso, -((d.getDay() + 6) % 7));
 }
 
 export function formatoFecha(iso, opciones = { weekday: "short", day: "numeric", month: "short" }) {

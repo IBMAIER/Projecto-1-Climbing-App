@@ -270,3 +270,107 @@ input[type="text"], input[type="date"], textarea {
 
 .acciones { display: flex; flex-direction: column; gap: 8px; margin: 24px 0; }
 .acciones .primario { min-height: 56px; font-size: 18px; }
+
+/* ---------- Versión 2: bloques, calendario y estadísticas ---------- */
+
+nav a { font-size: 11px; }
+.ancho { width: 100%; }
+.ayuda { color: var(--suave); font-size: 14px; margin: 4px 0 12px; }
+.mini { min-height: 36px; min-width: 36px; padding: 0 8px; }
+.mini.peligro { color: var(--peligro); }
+.boton.secundario { margin: 8px 0; }
+
+.tipo small { font-weight: normal; font-size: 12px; text-align: center; }
+
+.objetivo {
+  background: var(--acento-suave);
+  border-radius: var(--radio);
+  padding: 10px 12px;
+  margin: 10px 0;
+  font-size: 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.objetivo small { display: block; font-weight: 600; color: var(--acento); text-transform: uppercase; font-size: 11px; letter-spacing: .04em; }
+
+.resumen-dia {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  font-size: 14px; color: var(--suave);
+  padding: 8px 0; border-bottom: 1px solid var(--borde); margin-bottom: 8px;
+}
+.resumen-dia b { color: var(--acento); }
+
+.bloque {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-left: 4px solid var(--acento);
+  border-radius: var(--radio);
+  padding: 12px;
+  margin: 12px 0;
+}
+.bloque .serie { background: var(--fondo); }
+.bloque .celda-grado { background: var(--fondo); }
+.bloque-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.bloque-cabecera b { font-size: 17px; }
+.bloque-acciones { display: flex; gap: 4px; }
+.pista { font-size: 13px; color: var(--suave); margin: 6px 0 0; }
+.menu-bloques { margin-top: 8px; }
+.celda-grado .mas small { font-size: 11px; color: var(--suave); }
+
+/* Calendario */
+.cal-cabecera { display: flex; justify-content: space-between; align-items: center; }
+.cal-cabecera h2 { margin: 0; font-size: 20px; }
+.cal-cabecera h2::first-letter { text-transform: uppercase; }
+.cal-leyenda { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--suave); margin: 10px 0; }
+.punto { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.punto.hecho { background: var(--acento); }
+.punto.planificado { border: 1.5px dashed var(--suave); }
+.calendario { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-dia-semana { text-align: center; font-size: 12px; color: var(--suave); padding: 2px 0; }
+.cal-celda {
+  min-height: 56px; padding: 4px 2px; border-radius: 8px;
+  flex-direction: column; justify-content: flex-start; gap: 2px;
+}
+.cal-celda .num { font-size: 13px; font-weight: 600; }
+.cal-celda .iconos { font-size: 14px; line-height: 1.1; word-break: break-all; }
+.cal-celda.hecho { background: var(--acento-suave); border-color: var(--acento); }
+.cal-celda.planificado { border-style: dashed; }
+.cal-celda.planificado .iconos { opacity: .55; }
+.cal-celda.fuera { opacity: .35; }
+.cal-celda.hoy .num { color: #fff; background: var(--acento); border-radius: 99px; padding: 0 6px; }
+.cal-celda.elegido { outline: 2px solid var(--texto); outline-offset: 1px; }
+.cal-titulo-dia::first-letter { text-transform: uppercase; }
+.cal-titulo-dia { text-transform: none; color: var(--texto); font-size: 18px; letter-spacing: 0; }
+
+.detalle .cifras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
+.detalle .cifras > div { display: flex; flex-direction: column; background: var(--fondo); border-radius: 8px; padding: 6px 8px; }
+.detalle .cifras b { font-size: 16px; }
+.bloques-detalle { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.bloque-detalle { border-left: 3px solid var(--acento); padding: 2px 0 2px 10px; }
+.plan-detalle .bloque-detalle { border-left-style: dashed; }
+.bloque-detalle-cabecera { display: flex; justify-content: space-between; gap: 8px; font-size: 15px; }
+.bloque-detalle-cabecera span:last-child { color: var(--suave); font-size: 13px; white-space: nowrap; }
+.linea { font-size: 14px; color: var(--suave); }
+.iconos-bloques { font-size: 13px; opacity: .8; }
+
+/* Estadísticas */
+.seccion { margin-bottom: 28px; }
+.seccion-cabecera { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.seccion-cabecera h3 { margin: 0; }
+.grafico-scroll { overflow-x: auto; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 8px 0; }
+.grafico-scroll svg { display: block; }
+.barra { fill: var(--acento); }
+.valor { font-size: 11px; text-anchor: middle; fill: var(--texto); font-weight: 600; }
+.eje { font-size: 10px; text-anchor: middle; fill: var(--suave); }
+.eje.sub { font-size: 9px; }
+.linea-base { stroke: var(--borde); }
+.linea-promedio { stroke: var(--medias); stroke-dasharray: 4 4; }
+.estadisticas small { font-size: 12px; }
+.delta { font-weight: 600; }
+.delta.sube { color: var(--ok); }
+.delta.baja { color: var(--peligro); }
+.tabla-scroll { overflow-x: auto; margin-top: 10px; }
+.tabla { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--superficie); border-radius: var(--radio); }
+.tabla th, .tabla td { padding: 8px; text-align: left; border-bottom: 1px solid var(--borde); vertical-align: top; }
+.tabla thead th { font-size: 12px; color: var(--suave); font-weight: 600; }
+.tabla td b, .tabla td small { display: block; }
+.tabla td small { color: var(--suave); font-size: 11px; }

@@ -9,24 +9,45 @@ El plan de entrenamiento y el diseño completo están en el archivo [`context`](
 ## Intensidad
 
 ```
-Intensidad de la sesión = Σ (bloques encadenados en el grado × número del grado)
+Intensidad = Σ (bloques encadenados × grado V) + Σ (vías encadenadas × equivalente V)
 ```
 
 Ejemplo: 10 V4 + 10 V5 + 5 V6 → 10·4 + 10·5 + 5·6 = **120**.
 
-Se calcula en las sesiones con bloques: board, resistencia, max boulder y roca.
+### Equivalencia vías → boulder
 
-## Versión 1 (esta)
+Anclada a tu nivel (5.12d / 7c ≈ V7). Se edita en `js/calculos.js` (`VIAS`).
 
-- **Hoy:** qué toca según el día, botón para registrar, avisos de codo,
-  resumen de la semana (sesiones, días de escalada, intensidad vs. semana pasada).
-- **Registrar:** formulario por tipo de sesión, con botones en vez de teclear.
-  Parte desde los valores de tu última sesión del mismo tipo.
-- **Historial:** sesiones agrupadas por semana, con filtro por tipo; tocar una
-  sesión la abre para editarla o borrarla.
+| YDS | Francés | ≈ V | | YDS | Francés | ≈ V |
+|---|---|---|---|---|---|---|
+| 5.10a | 6a | 0 | | 5.12a | 7a+ | 4.5 |
+| 5.10b | 6a+ | 0.5 | | 5.12b | 7b | 5 |
+| 5.10c | 6b | 1 | | 5.12c | 7b+ | 6 |
+| 5.10d | 6b+ | 1.5 | | 5.12d | 7c | 7 |
+| 5.11a | 6c | 2 | | 5.13a | 7c+ | 7.5 |
+| 5.11b | 6c | 2.5 | | 5.13b | 8a | 8 |
+| 5.11c | 6c+ | 3 | | 5.13c | 8a+ | 9 |
+| 5.11d | 7a | 4 | | 5.13d | 8b | 10 |
 
-Próximas: versión 2 (objetivos y regla subir/repetir/bajar), versión 3
-(gráficos de progreso y exportar a CSV).
+Cada vía cuenta como un bloque de su grado equivalente (`FACTOR_VIA = 1`).
+
+## Pantallas
+
+- **Hoy:** qué toca, botón para registrar el día planificado, avisos de codo y resumen semanal.
+- **Calendario:** días pasados con lo realizado; hoy y días futuros con lo planificado.
+  Tocar un día muestra el detalle completo (bloques, tiempos, ejercicios, objetivo y resultado)
+  o la planificación con botón para registrarla.
+- **Registrar:** eliges un día prediseñado (Board, Resistencia, Max boulder, Roca, Físico A/B,
+  Test máximo o Sesión libre) y agregas, quitas o reordenas bloques: calentamiento, fuerza de
+  dedos, board, boulder, resistencia, vías, roca, físico, test máximo u otro.
+- **Estadísticas:** intensidad diaria (solo días de escalada) o mensual, benchmarks del
+  entrenamiento (half crimp, pinza, board, boulder, vías, resistencia) y resumen de tests máximos.
+- **Historial:** sesiones por semana con filtro por tipo.
+
+### Plan semanal
+
+Lunes board · martes físico A · miércoles descanso · jueves resistencia · viernes físico B ·
+sábado roca o max boulder · domingo descanso. Se edita en `js/calculos.js` (`PLAN_SEMANA`).
 
 ## Archivos
 
@@ -34,9 +55,12 @@ Próximas: versión 2 (objetivos y regla subir/repetir/bajar), versión 3
 |---|---|
 | `index.html` | Punto de entrada: estructura y navegación |
 | `css/estilos.css` | Diseño (celular primero) |
-| `js/app.js` | Arranque, login y pantallas Hoy / Historial |
-| `js/formularios.js` | Pantalla Registrar: un formulario por tipo de sesión |
-| `js/calculos.js` | Intensidad, grados, fechas y datos fijos del plan |
+| `js/app.js` | Arranque, login, navegación y pantallas Hoy / Historial |
+| `js/formularios.js` | Pantalla Registrar: sesión armada por bloques |
+| `js/calendario.js` | Pantalla Calendario y detalle de cada día |
+| `js/estadisticas.js` | Gráfico de intensidad, benchmarks y tests |
+| `js/ui.js` | Piezas compartidas: tarjetas y detalle de sesión |
+| `js/calculos.js` | Plan, plantillas, grados, equivalencias, intensidad y fechas |
 | `js/db.js` | Único archivo que habla con la base de datos |
 | `js/config.js` | Claves de Firebase (vacías = modo local) |
 | `sw.js` | Service worker: uso sin señal |

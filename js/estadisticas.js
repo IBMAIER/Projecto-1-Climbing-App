@@ -9,7 +9,7 @@
 import {
   intensidadPorDia, intensidadPromedio, benchmarkDedos, benchmarkGrado, benchmarkVias,
   benchmarkResistencia, tests, intensidadBloque, nombreVia, formatoFecha, desdeISO,
-  VIAS, LARGOS_TABLA, METROS_POR_TRAMO, DESCUENTO_TRAMO, descomponerVia, textoV,
+  VIAS, LARGOS_TABLA, METROS_POR_TRAMO, DESCUENTO_TRAMO, FACTOR_VIA, descomponerVia, textoV,
 } from "./calculos.js";
 import { esc } from "./ui.js";
 
@@ -192,7 +192,8 @@ function tablaEquivalencias() {
     <summary>Tabla de equivalencias vías → boulders</summary>
     <p class="ayuda">Cada vía se divide en tramos de ${METROS_POR_TRAMO} m (≈ 6 movimientos, un boulder).
       Un tramo es el crux y vale un boulder de su grado; los demás son escalada continua y valen
-      ${DESCUENTO_TRAMO} grados V menos. Cada celda: boulders equivalentes e intensidad.</p>
+      ${DESCUENTO_TRAMO} grados V menos. Todo se multiplica por ${FACTOR_VIA}.
+      Cada celda: boulders equivalentes e intensidad.</p>
     <div class="tabla-scroll"><table class="tabla tabla-equiv">
       <thead><tr><th>Vía</th><th>Crux</th>${LARGOS_TABLA.map((m) => `<th>${m} m</th>`).join("")}</tr></thead>
       <tbody>${VIAS.map((v) => `<tr>

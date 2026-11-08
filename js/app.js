@@ -35,7 +35,7 @@ let filtroHistorial = "todos";
 // Arranque
 // ---------------------------------------------------------------------------
 
-export const VERSION_APP = "v5";
+export const VERSION_APP = "v6";
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker

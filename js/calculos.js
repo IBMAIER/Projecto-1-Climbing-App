@@ -36,7 +36,9 @@ export const VIAS = [
 //   - 1 tramo es el crux: vale un boulder del grado crux.
 //   - Los demás tramos son escalada continua: valen DESCUENTO_TRAMO grados V
 //     menos que el crux (mínimo V0).
-//   Intensidad de la vía = crux + (tramos − 1) × max(0, crux − DESCUENTO_TRAMO)
+//   - Todo se multiplica por FACTOR_VIA.
+//   Intensidad de la vía = FACTOR_VIA × [crux + (tramos − 1) × max(0, crux − DESCUENTO_TRAMO)]
+export const FACTOR_VIA = 3;
 export const METROS_POR_TRAMO = 5;
 export const DESCUENTO_TRAMO = 2;
 export const LARGO_VIA_DEFECTO = 20;
@@ -48,12 +50,14 @@ export function descomponerVia(yds, largoM = LARGO_VIA_DEFECTO) {
   const crux = VIA_POR_YDS[yds]?.crux ?? 0;
   const tramos = Math.max(1, Math.round(largoM / METROS_POR_TRAMO));
   const tramo = Math.max(0, crux - DESCUENTO_TRAMO);
+  const nCrux = FACTOR_VIA;
+  const nTramo = FACTOR_VIA * (tramos - 1);
   return {
     crux,
     tramo,
     tramos,
-    intensidad: Math.round((crux + (tramos - 1) * tramo) * 10) / 10,
-    texto: tramos > 1 ? `1×${textoV(crux)} + ${tramos - 1}×${textoV(tramo)}` : `1×${textoV(crux)}`,
+    intensidad: Math.round((nCrux * crux + nTramo * tramo) * 10) / 10,
+    texto: nTramo ? `${nCrux}×${textoV(crux)} + ${nTramo}×${textoV(tramo)}` : `${nCrux}×${textoV(crux)}`,
   };
 }
 

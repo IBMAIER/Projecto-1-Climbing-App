@@ -6,7 +6,7 @@
 // - Al tocar un día aparece el detalle completo debajo del calendario.
 
 import { PLANTILLAS, hoyISO, aISO, desdeISO, planDelDia, formatoFecha, intensidad } from "./calculos.js";
-import { detalleSesion, detallePlan, nombreSesion } from "./ui.js";
+import { detalleSesion, detallePlan, nombreSesion, esc } from "./ui.js";
 
 const DIAS = ["L", "M", "M", "J", "V", "S", "D"];
 
@@ -21,7 +21,7 @@ export function elegirDia(iso) {
   mesVisible = new Date(d.getFullYear(), d.getMonth(), 1);
 }
 
-export function mostrarCalendario(contenedor, sesiones) {
+export function mostrarCalendario(contenedor, sesiones, planes) {
   const hoy = hoyISO();
   if (!mesVisible) {
     const d = desdeISO(hoy);
@@ -60,6 +60,7 @@ export function mostrarCalendario(contenedor, sesiones) {
       <div class="cal-leyenda">
         <span><i class="punto hecho"></i>Realizado</span>
         <span><i class="punto planificado"></i>Planificado</span>
+        <span><i class="punto descarga"></i>Descarga</span>
         <span>Intensidad del mes: <b>${Math.round(intensidadMes)}</b></span>
       </div>
       <div class="calendario">
@@ -81,11 +82,12 @@ export function mostrarCalendario(contenedor, sesiones) {
       contenido = hechas.map((s) => nombreSesion(s).icono).join("");
       clase = "hecho";
     } else if (iso >= hoy) {
-      const plan = planDelDia(iso);
-      if (plan.length) {
-        contenido = plan.map((t) => PLANTILLAS[t].icono).join("");
+      const pd = planDelDia(iso, planes);
+      if (pd?.tipos.length) {
+        contenido = pd.tipos.map((t) => PLANTILLAS[t]?.icono || "").join("");
         clase = "planificado";
       }
+      if (pd?.descarga) clase += " descarga";
     }
 
     return `<button type="button" class="cal-celda ${clase} ${fuera ? "fuera" : ""}
@@ -104,18 +106,28 @@ export function mostrarCalendario(contenedor, sesiones) {
       cuerpo = hechas.map(detalleSesion).join("") +
         `<a class="boton secundario ancho" href="#registrar//${iso}">+ Agregar otra sesión este día</a>`;
     } else if (iso >= hoy) {
-      const plan = planDelDia(iso);
-      cuerpo = plan.length
-        ? (plan.length > 1 ? `<p class="ayuda">Elige una de estas opciones:</p>` : "") +
-          plan.map((t) => detallePlan(t, iso)).join("")
-        : `<p class="vacio">Descanso planificado.</p>
-           <a class="boton secundario ancho" href="#registrar//${iso}">+ Registrar una sesión</a>`;
+      const pd = planDelDia(iso, planes);
+      if (!pd) {
+        cuerpo = `<p class="vacio">No hay un plan para este día.</p>
+          <a class="boton secundario ancho" href="#plan">Ir a la pestaña Plan</a>`;
+      } else if (pd.tipos.length) {
+        cuerpo = (pd.tipos.length > 1 ? `<p class="ayuda">Elige una de estas opciones:</p>` : "") +
+          pd.tipos.map((t) => detallePlan(t, iso)).join("");
+      } else {
+        cuerpo = `<p class="vacio">Descanso planificado.</p>
+          <a class="boton secundario ancho" href="#registrar//${iso}">+ Registrar una sesión</a>`;
+      }
     } else {
       cuerpo = `<p class="vacio">Sin sesiones registradas (descanso).</p>
         <a class="boton secundario ancho" href="#registrar//${iso}">+ Registrar una sesión</a>`;
     }
 
-    return `<h3 class="cal-titulo-dia">${titulo}</h3>${cuerpo}`;
+    const pd = planDelDia(iso, planes);
+    const infoPlan = pd
+      ? `<p class="info-plan"><a href="#plan/${pd.plan.id}">${esc(pd.plan.nombre || "Plan")}</a> · semana ${pd.semana} de ${pd.plan.semanas}${
+          pd.descarga ? ` · <b>descarga</b>: volumen a la mitad, sin ir al límite` : ""}</p>`
+      : "";
+    return `<h3 class="cal-titulo-dia">${titulo}</h3>${infoPlan}${cuerpo}`;
   }
 
   function alHacerClick(ev) {

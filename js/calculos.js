@@ -186,9 +186,9 @@ export const PLANTILLAS = {
   },
 };
 
-// Qué toca cada día (0 = domingo). Lista vacía = descanso.
-// El sábado tiene dos opciones: roca o max boulder.
-export const PLAN_SEMANA = {
+// Semana sugerida para un plan nuevo (0 = domingo). Lista vacía = descanso;
+// dos o más días prediseñados = opciones para elegir ese día.
+export const SEMANA_SUGERIDA = {
   0: [],
   1: ["board"],
   2: ["fisico_a"],
@@ -198,8 +198,44 @@ export const PLAN_SEMANA = {
   6: ["roca", "max_boulder"],
 };
 
-export function planDelDia(iso) {
-  return PLAN_SEMANA[desdeISO(iso).getDay()] || [];
+export const FOCOS = { fuerza: "Fuerza", resistencia: "Resistencia", roca: "Roca", otro: "Otro" };
+
+// Último día de un plan.
+export function finPlan(plan) {
+  return sumarDias(plan.inicio, plan.semanas * 7 - 1);
+}
+
+// Plan vigente en una fecha (si hay varios, el que empezó más tarde).
+export function planVigente(iso, planes) {
+  return planes
+    .filter((p) => p.inicio <= iso && iso <= finPlan(p))
+    .sort((a, b) => b.inicio.localeCompare(a.inicio))[0] || null;
+}
+
+const ES_ESCALADA = new Set(["board", "resistencia", "max_boulder", "roca", "test"]);
+
+// Qué toca en una fecha según los planes.
+// Devuelve { tipos, plan, semana, descarga } o null si no hay plan.
+export function planDelDia(iso, planes = []) {
+  const plan = planVigente(iso, planes);
+  if (!plan) return null;
+
+  const dias = Math.round((desdeISO(iso) - desdeISO(plan.inicio)) / 86400000);
+  const semana = Math.floor(dias / 7) + 1;
+  const descarga = plan.descargaCada > 0 && semana % plan.descargaCada === 0;
+  let tipos = [...(plan.semana?.[desdeISO(iso).getDay()] || [])];
+
+  // En la semana de descarga, el primer día de escalada se reemplaza por el test.
+  if (descarga && plan.testEnDescarga && tipos.some((t) => ES_ESCALADA.has(t))) {
+    const inicioSemana = sumarDias(plan.inicio, (semana - 1) * 7);
+    let primero = null;
+    for (let i = 0; i < 7 && !primero; i++) {
+      const dia = sumarDias(inicioSemana, i);
+      if ((plan.semana?.[desdeISO(dia).getDay()] || []).some((t) => ES_ESCALADA.has(t))) primero = dia;
+    }
+    if (primero === iso) tipos = ["test"];
+  }
+  return { tipos, plan, semana, descarga };
 }
 
 export function esEscalada(sesion) {

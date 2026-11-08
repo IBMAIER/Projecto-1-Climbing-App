@@ -5,7 +5,7 @@
 // reciente (y actualiza la copia); sin señal usa la copia guardada.
 // Cambia VERSION en cada publicación para que los dispositivos se actualicen.
 
-const VERSION = "v6";
+const VERSION = "v7";
 const CACHE = `bitacora-${VERSION}`;
 const SDK = "https://www.gstatic.com/firebasejs/10.12.2";
 
@@ -22,6 +22,7 @@ const ARCHIVOS = [
   "./js/ui.js",
   "./js/calendario.js",
   "./js/estadisticas.js",
+  "./js/planes.js",
   "./iconos/icono-192.png",
   "./iconos/icono-512.png",
 ];

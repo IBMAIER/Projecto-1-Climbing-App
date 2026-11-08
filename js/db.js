@@ -6,6 +6,7 @@
 //   escucharSesiones(callback)  entrega las sesiones cada vez que cambian
 //   guardarSesion(sesion)       crea o actualiza (si trae id)
 //   borrarSesion(id)
+//   escucharPlanes / guardarPlan / borrarPlan   lo mismo para los planes
 //
 // Hay dos implementaciones con la misma interfaz:
 //   - Firebase (Auth + Firestore con copia local para usar sin señal)
@@ -68,52 +69,57 @@ export async function salir() {
 }
 
 // ---------------------------------------------------------------------------
-// Sesiones de entrenamiento
+// Colecciones: "sessions" (sesiones) y "plans" (planes de entrenamiento)
 // ---------------------------------------------------------------------------
 
-function ordenar(lista) {
+function ordenarSesiones(lista) {
   // Más reciente primero; si es el mismo día, la última creada primero.
   return lista.sort(
     (a, b) => b.fecha.localeCompare(a.fecha) || (b.creado || 0) - (a.creado || 0)
   );
 }
 
-export function escucharSesiones(callback, alError = () => {}) {
+function ordenarPlanes(lista) {
+  return lista.sort((a, b) => b.inicio.localeCompare(a.inicio));
+}
+
+function escuchar(coleccion, ordenar, callback, alError) {
   if (modoLocal) {
-    oyentesLocales.add(callback);
-    callback(ordenar(leerLocal()));
-    return () => oyentesLocales.delete(callback);
+    const oyente = () => callback(ordenar(leerLocal(coleccion)));
+    oyentesLocales.add(oyente);
+    oyente();
+    return () => oyentesLocales.delete(oyente);
   }
 
-  const ref = fb.collection(firestore, "users", usuario.uid, "sessions");
+  const ref = fb.collection(firestore, "users", usuario.uid, coleccion);
   // Evento: se dispara al inicio y cada vez que cambian los datos
   // (en este dispositivo o en otro).
   return fb.onSnapshot(
     ref,
     (snap) => callback(ordenar(snap.docs.map((d) => ({ id: d.id, ...d.data() })))),
     (err) => {
-      console.error("Error leyendo sesiones:", err);
+      console.error(`Error leyendo ${coleccion}:`, err);
       alError(err);
     }
   );
 }
 
-export function guardarSesion(sesion) {
-  const { id, ...datos } = sesion;
+function guardar(coleccion, doc) {
+  const { id, ...datos } = doc;
   datos.actualizado = Date.now();
   if (!datos.creado) datos.creado = Date.now();
 
   if (modoLocal) {
-    const lista = leerLocal();
+    const lista = leerLocal(coleccion);
     const nuevoId = id || crypto.randomUUID();
     const i = lista.findIndex((s) => s.id === nuevoId);
     if (i >= 0) lista[i] = { id: nuevoId, ...datos };
     else lista.push({ id: nuevoId, ...datos });
-    escribirLocal(lista);
+    escribirLocal(coleccion, lista);
     return nuevoId;
   }
 
-  const col = fb.collection(firestore, "users", usuario.uid, "sessions");
+  const col = fb.collection(firestore, "users", usuario.uid, coleccion);
   const ref = id ? fb.doc(col, id) : fb.doc(col);
   // No se espera (await) la respuesta del servidor: Firestore guarda primero
   // en la copia local y sube el cambio cuando hay señal. Así guardar es
@@ -122,31 +128,39 @@ export function guardarSesion(sesion) {
   return ref.id;
 }
 
-export function borrarSesion(id) {
+function borrar(coleccion, id) {
   if (modoLocal) {
-    escribirLocal(leerLocal().filter((s) => s.id !== id));
+    escribirLocal(coleccion, leerLocal(coleccion).filter((s) => s.id !== id));
     return;
   }
-  const ref = fb.doc(firestore, "users", usuario.uid, "sessions", id);
+  const ref = fb.doc(firestore, "users", usuario.uid, coleccion, id);
   fb.deleteDoc(ref).catch((err) => console.error("Error borrando:", err));
 }
+
+export const escucharSesiones = (cb, alError = () => {}) => escuchar("sessions", ordenarSesiones, cb, alError);
+export const guardarSesion = (s) => guardar("sessions", s);
+export const borrarSesion = (id) => borrar("sessions", id);
+
+export const escucharPlanes = (cb, alError = () => {}) => escuchar("plans", ordenarPlanes, cb, alError);
+export const guardarPlan = (p) => guardar("plans", p);
+export const borrarPlan = (id) => borrar("plans", id);
 
 // ---------------------------------------------------------------------------
 // Modo local (localStorage)
 // ---------------------------------------------------------------------------
 
-const CLAVE = "escalada.sesiones";
+const CLAVES = { sessions: "escalada.sesiones", plans: "escalada.planes" };
 const oyentesLocales = new Set();
 
-function leerLocal() {
+function leerLocal(coleccion) {
   try {
-    return JSON.parse(localStorage.getItem(CLAVE)) || [];
+    return JSON.parse(localStorage.getItem(CLAVES[coleccion])) || [];
   } catch {
     return [];
   }
 }
 
-function escribirLocal(lista) {
-  localStorage.setItem(CLAVE, JSON.stringify(lista));
-  oyentesLocales.forEach((cb) => cb(ordenar(leerLocal())));
+function escribirLocal(coleccion, lista) {
+  localStorage.setItem(CLAVES[coleccion], JSON.stringify(lista));
+  oyentesLocales.forEach((cb) => cb());
 }

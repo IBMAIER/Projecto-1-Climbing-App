@@ -57,6 +57,7 @@ V0/1 = entre V0 y V1. Como en la fórmula un V0 vale 0, las vías de 5.11b o men
 ## Pantallas
 
 - **Hoy:** qué toca, botón para registrar el día planificado, avisos de codo y resumen semanal.
+- **Plan:** planes de entrenamiento con duración, semana tipo y descargas (ver abajo).
 - **Calendario:** días pasados con lo realizado; hoy y días futuros con lo planificado.
   Tocar un día muestra el detalle completo (bloques, tiempos, ejercicios, objetivo y resultado)
   o la planificación con botón para registrarla.
@@ -67,10 +68,20 @@ V0/1 = entre V0 y V1. Como en la fórmula un V0 vale 0, las vías de 5.11b o men
   entrenamiento (half crimp, pinza, board, boulder, vías, resistencia) y resumen de tests máximos.
 - **Historial:** sesiones por semana con filtro por tipo.
 
-### Plan semanal
+### Plan de entrenamiento (pestaña Plan)
 
-Lunes board · martes físico A · miércoles descanso · jueves resistencia · viernes físico B ·
-sábado roca o max boulder · domingo descanso. Se edita en `js/calculos.js` (`PLAN_SEMANA`).
+Cada plan define:
+
+- **Nombre y foco** (fuerza, resistencia, roca u otro).
+- **Inicio y duración en semanas**.
+- **Semana tipo:** qué día prediseñado toca cada día. Sin nada = descanso; con dos o más,
+  ese día se elige una opción.
+- **Descarga:** cada cuántas semanas (volumen a la mitad) y si en esa semana el primer día de
+  escalada se reemplaza por un **test máximo**.
+
+El Calendario y Hoy muestran lo que dice el plan vigente en cada fecha. Si dos planes se cruzan,
+manda el que empieza más tarde. Un plan nuevo empieza al día siguiente del plan vigente y copia
+su semana tipo.
 
 ## Archivos
 
@@ -81,6 +92,7 @@ sábado roca o max boulder · domingo descanso. Se edita en `js/calculos.js` (`P
 | `js/app.js` | Arranque, login, navegación y pantallas Hoy / Historial |
 | `js/formularios.js` | Pantalla Registrar: sesión armada por bloques |
 | `js/calendario.js` | Pantalla Calendario y detalle de cada día |
+| `js/planes.js` | Pantalla Plan: lista y editor de planes |
 | `js/estadisticas.js` | Gráfico de intensidad, benchmarks y tests |
 | `js/ui.js` | Piezas compartidas: tarjetas y detalle de sesión |
 | `js/calculos.js` | Plan, plantillas, grados, equivalencias, intensidad y fechas |

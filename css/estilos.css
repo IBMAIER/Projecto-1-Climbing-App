@@ -380,3 +380,25 @@ nav a { font-size: 11px; }
 .tabla-equiv th small { display: block; color: var(--suave); font-weight: normal; font-size: 11px; }
 .tabla-equiv td { white-space: nowrap; }
 .tabla-equiv td b { font-size: 15px; }
+
+/* Plan */
+.info-plan { font-size: 13px; color: var(--suave); margin: -4px 0 8px; }
+.info-plan a { color: var(--acento); }
+.punto.descarga { background: var(--aviso); border: 1.5px solid var(--aviso-borde); }
+.cal-celda.descarga { background: var(--aviso); }
+.plan-tarjeta.pasado, .plan-tarjeta.solapado { opacity: .7; }
+.progreso { height: 6px; background: var(--borde); border-radius: 99px; overflow: hidden; margin: 8px 0 2px; }
+.progreso div { height: 100%; background: var(--acento); }
+.semana-mini { display: flex; gap: 4px; margin-top: 8px; }
+.semana-mini span { flex: 1; text-align: center; font-size: 14px; background: var(--fondo); border-radius: 6px; padding: 2px 0; }
+.semana-mini i { display: block; font-style: normal; font-size: 10px; color: var(--suave); }
+.semana-editor { display: flex; flex-direction: column; gap: 6px; }
+.dia-plan { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 8px 10px; }
+.dia-plan-fila { display: flex; align-items: center; gap: 8px; }
+.dia-nombre { width: 76px; flex: none; font-weight: 600; font-size: 14px; }
+.dia-plan-fila .chips { flex: 1; }
+.dia-plan-fila .chip { font-size: 13px; padding: 4px 10px; min-height: 32px; }
+.descanso { color: var(--suave); font-size: 14px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin: 8px 0 16px; }
+.check input { width: 20px; height: 20px; flex: none; }
+nav a { font-size: 10px; }

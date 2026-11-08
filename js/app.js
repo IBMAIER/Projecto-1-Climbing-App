@@ -5,8 +5,8 @@
 //   2. db.iniciar() avisa quién es el usuario (evento de login).
 //   3. Con usuario, se escuchan las sesiones; cada cambio redibuja la pantalla.
 //   4. La pantalla visible depende del "hash" de la URL:
-//        #hoy, #registrar[/tipo[/fecha]], #calendario, #estadisticas,
-//        #historial, #editar/<id>
+//        #hoy, #registrar[/tipo[/fecha]], #calendario, #plan[/nuevo|/<id>],
+//        #estadisticas, #historial, #editar/<id>
 //      Cambiar el hash dispara el evento hashchange.
 //
 // Cada pantalla es una función mostrarX(contenedor, ...) que devuelve otra
@@ -16,6 +16,7 @@ import * as db from "./db.js";
 import { crearFormulario } from "./formularios.js";
 import { mostrarCalendario, elegirDia } from "./calendario.js";
 import { mostrarEstadisticas } from "./estadisticas.js";
+import { mostrarPlanes, crearEditorPlan } from "./planes.js";
 import {
   PLANTILLAS, normalizar, esEscalada, intensidad, planDelDia,
   hoyISO, lunesDe, sumarDias, formatoFecha,
@@ -27,6 +28,7 @@ const vista = $("#vista");
 
 let usuario = null;
 let sesiones = [];
+let planes = [];
 let dejarDeEscuchar = null;
 let desmontar = null;
 let filtroHistorial = "todos";
@@ -35,7 +37,7 @@ let filtroHistorial = "todos";
 // Arranque
 // ---------------------------------------------------------------------------
 
-export const VERSION_APP = "v6";
+export const VERSION_APP = "v7";
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
@@ -77,6 +79,7 @@ function alCambiarUsuario(u) {
   if (dejarDeEscuchar) dejarDeEscuchar();
   dejarDeEscuchar = null;
   sesiones = [];
+  planes = [];
 
   document.body.classList.toggle("sin-usuario", !u);
   $("#usuario").innerHTML = u
@@ -90,22 +93,32 @@ function alCambiarUsuario(u) {
     return;
   }
 
-  // Evento: cada vez que cambian las sesiones se actualiza la pantalla
-  // (salvo el formulario, para no borrar lo que estás escribiendo).
-  dejarDeEscuchar = db.escucharSesiones(
-    (lista) => {
-      sesiones = lista.map(normalizar);
-      const p = pantallaActual();
-      if (!p.startsWith("registrar") && !p.startsWith("editar")) mostrarPantalla();
-    },
-    (err) => {
-      const msg = err.code === "permission-denied"
-        ? `La cuenta ${esc(u.email)} no tiene permiso para usar esta app.`
-        : `No se pudieron cargar los datos (${esc(err.code || err.message)}).`;
-      vista.innerHTML = `<div class="tarjeta aviso">${msg}</div>
-        <button class="secundario" data-app="salir">Cambiar de cuenta</button>`;
-    }
-  );
+  // Evento: cada vez que cambian las sesiones o los planes se actualiza la
+  // pantalla (salvo los editores, para no borrar lo que estás escribiendo).
+  const alError = (err) => {
+    const msg = err.code === "permission-denied"
+      ? `La cuenta ${esc(u.email)} no tiene permiso para usar esta app.`
+      : `No se pudieron cargar los datos (${esc(err.code || err.message)}).`;
+    vista.innerHTML = `<div class="tarjeta aviso">${msg}</div>
+      <button class="secundario" data-app="salir">Cambiar de cuenta</button>`;
+  };
+  const refrescar = () => {
+    const p = pantallaActual();
+    const editando = p.startsWith("registrar") || p.startsWith("editar") || p.startsWith("plan/");
+    if (!editando) mostrarPantalla();
+  };
+  const parar1 = db.escucharSesiones((lista) => {
+    sesiones = lista.map(normalizar);
+    refrescar();
+  }, alError);
+  const parar2 = db.escucharPlanes((lista) => {
+    planes = lista;
+    refrescar();
+  }, alError);
+  dejarDeEscuchar = () => {
+    parar1();
+    parar2();
+  };
   mostrarPantalla();
 }
 
@@ -143,8 +156,33 @@ function mostrarPantalla() {
       return s ? mostrarFormulario({ sesion: s }) : ir("historial");
     }
     case "calendario":
-      desmontar = mostrarCalendario(vista, sesiones);
+      desmontar = mostrarCalendario(vista, sesiones, planes);
       return;
+    case "plan": {
+      if (!partes[0]) {
+        desmontar = mostrarPlanes(vista, planes);
+        return;
+      }
+      const plan = partes[0] === "nuevo" ? null : planes.find((x) => x.id === partes[0]);
+      if (partes[0] !== "nuevo" && !plan) return ir("plan");
+      window.scrollTo(0, 0);
+      desmontar = crearEditorPlan(vista, {
+        plan,
+        planes,
+        alGuardar(datos) {
+          db.guardarPlan(datos);
+          ir("plan");
+        },
+        alCancelar() {
+          ir("plan");
+        },
+        alBorrar(id) {
+          db.borrarPlan(id);
+          ir("plan");
+        },
+      });
+      return;
+    }
     case "estadisticas":
       desmontar = mostrarEstadisticas(vista, sesiones);
       return;
@@ -179,7 +217,8 @@ function mostrarHoy() {
   const diasEscalada = new Set(semana.filter(esEscalada).map((s) => s.fecha)).size;
 
   const hechasHoy = sesiones.filter((s) => s.fecha === hoy);
-  const plan = planDelDia(hoy);
+  const pd = planDelDia(hoy, planes);
+  const plan = pd?.tipos || [];
 
   const avisos = [];
   const ultima = sesiones.find((s) => s.codo != null || s.codoDiaSiguiente != null);
@@ -195,6 +234,11 @@ function mostrarHoy() {
     bloqueHoy = `<div class="tarjeta plan"><small>Hoy registraste</small>
       <b>${hechasHoy.map((s) => `${nombreSesion(s).icono} ${nombreSesion(s).nombre}`).join(" + ")}</b></div>
       <a class="boton secundario grande" href="#registrar">+ Registrar otra sesión</a>`;
+  } else if (!pd) {
+    bloqueHoy = `<div class="tarjeta plan"><small>Sin plan para hoy</small>
+        <b>Crea un plan para ver qué toca cada día</b></div>
+      <a class="boton secundario ancho" href="#plan/nuevo">+ Crear plan</a>
+      <a class="boton primario grande" href="#registrar">+ Registrar sesión</a>`;
   } else if (plan.length) {
     bloqueHoy = `<div class="tarjeta plan"><small>Hoy toca</small>
         <b>${plan.map((t) => PLANTILLAS[t].nombre).join(" o ")}</b></div>
@@ -207,6 +251,8 @@ function mostrarHoy() {
 
   vista.innerHTML = `
     <p class="fecha-hoy">${formatoFecha(hoy, { weekday: "long", day: "numeric", month: "long" })}</p>
+    ${pd ? `<p class="info-plan"><a href="#plan/${pd.plan.id}">${esc(pd.plan.nombre || "Plan")}</a> · semana ${pd.semana} de ${pd.plan.semanas}${
+      pd.descarga ? " · <b>semana de descarga</b>: volumen a la mitad, sin ir al límite" : ""}</p>` : ""}
     ${bloqueHoy}
 
     ${avisos.map((a) => `<div class="tarjeta aviso">⚠️ ${a}</div>`).join("")}

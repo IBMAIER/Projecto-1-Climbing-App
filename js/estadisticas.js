@@ -9,6 +9,7 @@
 import {
   intensidadPorDia, intensidadPromedio, benchmarkDedos, benchmarkGrado, benchmarkVias,
   benchmarkResistencia, tests, intensidadBloque, nombreVia, formatoFecha, desdeISO,
+  VIAS, LARGOS_TABLA, METROS_POR_TRAMO, DESCUENTO_TRAMO, descomponerVia, textoV,
 } from "./calculos.js";
 import { esc } from "./ui.js";
 
@@ -183,6 +184,30 @@ function seccionTests(sesiones) {
 }
 
 // ---------------------------------------------------------------------------
+// Tabla de equivalencias vías -> boulders
+// ---------------------------------------------------------------------------
+
+function tablaEquivalencias() {
+  return `<details class="equivalencias">
+    <summary>Tabla de equivalencias vías → boulders</summary>
+    <p class="ayuda">Cada vía se divide en tramos de ${METROS_POR_TRAMO} m (≈ 6 movimientos, un boulder).
+      Un tramo es el crux y vale un boulder de su grado; los demás son escalada continua y valen
+      ${DESCUENTO_TRAMO} grados V menos. Cada celda: boulders equivalentes e intensidad.</p>
+    <div class="tabla-scroll"><table class="tabla tabla-equiv">
+      <thead><tr><th>Vía</th><th>Crux</th>${LARGOS_TABLA.map((m) => `<th>${m} m</th>`).join("")}</tr></thead>
+      <tbody>${VIAS.map((v) => `<tr>
+        <th>${v.yds}<small>${v.fr}</small></th>
+        <td>${textoV(v.crux)}</td>
+        ${LARGOS_TABLA.map((m) => {
+          const d = descomponerVia(v.yds, m);
+          return `<td><b>${d.intensidad}</b><small>${d.texto}</small></td>`;
+        }).join("")}
+      </tr>`).join("")}</tbody>
+    </table></div>
+  </details>`;
+}
+
+// ---------------------------------------------------------------------------
 // Pantalla
 // ---------------------------------------------------------------------------
 
@@ -215,6 +240,11 @@ export function mostrarEstadisticas(contenedor, sesiones) {
       <section class="seccion">
         <h3>Tests máximos</h3>
         ${seccionTests(sesiones)}
+      </section>
+
+      <section class="seccion">
+        <h3>Equivalencias</h3>
+        ${tablaEquivalencias()}
       </section>`;
 
     // Mostrar lo más reciente: desplazar el gráfico al final.

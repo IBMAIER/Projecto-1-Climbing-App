@@ -14,22 +14,44 @@ Intensidad = Σ (bloques encadenados × grado V) + Σ (vías encadenadas × equi
 
 Ejemplo: 10 V4 + 10 V5 + 5 V6 → 10·4 + 10·5 + 5·6 = **120**.
 
-### Equivalencia vías → boulder
+### Equivalencia vías → boulders
 
-Anclada a tu nivel (5.12d / 7c ≈ V7). Se edita en `js/calculos.js` (`VIAS`).
+Cada vía se descompone en boulders según su grado y su largo:
 
-| YDS | Francés | ≈ V | | YDS | Francés | ≈ V |
-|---|---|---|---|---|---|---|
-| 5.10a | 6a | 0 | | 5.12a | 7a+ | 4.5 |
-| 5.10b | 6a+ | 0.5 | | 5.12b | 7b | 5 |
-| 5.10c | 6b | 1 | | 5.12c | 7b+ | 6 |
-| 5.10d | 6b+ | 1.5 | | 5.12d | 7c | 7 |
-| 5.11a | 6c | 2 | | 5.13a | 7c+ | 7.5 |
-| 5.11b | 6c | 2.5 | | 5.13b | 8a | 8 |
-| 5.11c | 6c+ | 3 | | 5.13c | 8a+ | 9 |
-| 5.11d | 7a | 4 | | 5.13d | 8b | 10 |
+1. Se divide en **tramos de 5 m** (≈ 6 movimientos, el largo de un boulder).
+2. **1 tramo es el crux:** vale un boulder del grado crux de la vía (columna Crux; medio grado V por letra, anclado en 5.12d → V5).
+3. **Los demás tramos** son escalada continua: valen **2 grados V menos** que el crux (mínimo V0).
 
-Cada vía cuenta como un bloque de su grado equivalente (`FACTOR_VIA = 1`).
+```
+Intensidad de la vía = crux + (tramos − 1) × (crux − 2)
+```
+
+En cada bloque de vías, roca o resistencia se indica el **largo típico** de las vías (por defecto 20 m).
+Los parámetros están en `js/calculos.js` (`VIAS`, `METROS_POR_TRAMO`, `DESCUENTO_TRAMO`).
+La tabla también está en la app: **Estadísticas → Equivalencias**.
+
+| Vía | Crux | 10 m | 15 m | 20 m | 25 m | 30 m | 35 m |
+|---|---|---|---|---|---|---|---|
+| 5.9 (5c) | V0 | **0** 1×V0 + 1×V0 | **0** 1×V0 + 2×V0 | **0** 1×V0 + 3×V0 | **0** 1×V0 + 4×V0 | **0** 1×V0 + 5×V0 | **0** 1×V0 + 6×V0 |
+| 5.10a (6a) | V0 | **0** 1×V0 + 1×V0 | **0** 1×V0 + 2×V0 | **0** 1×V0 + 3×V0 | **0** 1×V0 + 4×V0 | **0** 1×V0 + 5×V0 | **0** 1×V0 + 6×V0 |
+| 5.10b (6a+) | V0 | **0** 1×V0 + 1×V0 | **0** 1×V0 + 2×V0 | **0** 1×V0 + 3×V0 | **0** 1×V0 + 4×V0 | **0** 1×V0 + 5×V0 | **0** 1×V0 + 6×V0 |
+| 5.10c (6b) | V0/1 | **0.5** 1×V0/1 + 1×V0 | **0.5** 1×V0/1 + 2×V0 | **0.5** 1×V0/1 + 3×V0 | **0.5** 1×V0/1 + 4×V0 | **0.5** 1×V0/1 + 5×V0 | **0.5** 1×V0/1 + 6×V0 |
+| 5.10d (6b+) | V1 | **1** 1×V1 + 1×V0 | **1** 1×V1 + 2×V0 | **1** 1×V1 + 3×V0 | **1** 1×V1 + 4×V0 | **1** 1×V1 + 5×V0 | **1** 1×V1 + 6×V0 |
+| 5.11a (6c) | V1/2 | **1.5** 1×V1/2 + 1×V0 | **1.5** 1×V1/2 + 2×V0 | **1.5** 1×V1/2 + 3×V0 | **1.5** 1×V1/2 + 4×V0 | **1.5** 1×V1/2 + 5×V0 | **1.5** 1×V1/2 + 6×V0 |
+| 5.11b (6c) | V2 | **2** 1×V2 + 1×V0 | **2** 1×V2 + 2×V0 | **2** 1×V2 + 3×V0 | **2** 1×V2 + 4×V0 | **2** 1×V2 + 5×V0 | **2** 1×V2 + 6×V0 |
+| 5.11c (6c+) | V2/3 | **3** 1×V2/3 + 1×V0/1 | **3.5** 1×V2/3 + 2×V0/1 | **4** 1×V2/3 + 3×V0/1 | **4.5** 1×V2/3 + 4×V0/1 | **5** 1×V2/3 + 5×V0/1 | **5.5** 1×V2/3 + 6×V0/1 |
+| 5.11d (7a) | V3 | **4** 1×V3 + 1×V1 | **5** 1×V3 + 2×V1 | **6** 1×V3 + 3×V1 | **7** 1×V3 + 4×V1 | **8** 1×V3 + 5×V1 | **9** 1×V3 + 6×V1 |
+| 5.12a (7a+) | V3/4 | **5** 1×V3/4 + 1×V1/2 | **6.5** 1×V3/4 + 2×V1/2 | **8** 1×V3/4 + 3×V1/2 | **9.5** 1×V3/4 + 4×V1/2 | **11** 1×V3/4 + 5×V1/2 | **12.5** 1×V3/4 + 6×V1/2 |
+| 5.12b (7b) | V4 | **6** 1×V4 + 1×V2 | **8** 1×V4 + 2×V2 | **10** 1×V4 + 3×V2 | **12** 1×V4 + 4×V2 | **14** 1×V4 + 5×V2 | **16** 1×V4 + 6×V2 |
+| 5.12c (7b+) | V4/5 | **7** 1×V4/5 + 1×V2/3 | **9.5** 1×V4/5 + 2×V2/3 | **12** 1×V4/5 + 3×V2/3 | **14.5** 1×V4/5 + 4×V2/3 | **17** 1×V4/5 + 5×V2/3 | **19.5** 1×V4/5 + 6×V2/3 |
+| 5.12d (7c) | V5 | **8** 1×V5 + 1×V3 | **11** 1×V5 + 2×V3 | **14** 1×V5 + 3×V3 | **17** 1×V5 + 4×V3 | **20** 1×V5 + 5×V3 | **23** 1×V5 + 6×V3 |
+| 5.13a (7c+) | V5/6 | **9** 1×V5/6 + 1×V3/4 | **12.5** 1×V5/6 + 2×V3/4 | **16** 1×V5/6 + 3×V3/4 | **19.5** 1×V5/6 + 4×V3/4 | **23** 1×V5/6 + 5×V3/4 | **26.5** 1×V5/6 + 6×V3/4 |
+| 5.13b (8a) | V6/7 | **11** 1×V6/7 + 1×V4/5 | **15.5** 1×V6/7 + 2×V4/5 | **20** 1×V6/7 + 3×V4/5 | **24.5** 1×V6/7 + 4×V4/5 | **29** 1×V6/7 + 5×V4/5 | **33.5** 1×V6/7 + 6×V4/5 |
+| 5.13c (8a+) | V7 | **12** 1×V7 + 1×V5 | **17** 1×V7 + 2×V5 | **22** 1×V7 + 3×V5 | **27** 1×V7 + 4×V5 | **32** 1×V7 + 5×V5 | **37** 1×V7 + 6×V5 |
+| 5.13d (8b) | V8 | **14** 1×V8 + 1×V6 | **20** 1×V8 + 2×V6 | **26** 1×V8 + 3×V6 | **32** 1×V8 + 4×V6 | **38** 1×V8 + 5×V6 | **44** 1×V8 + 6×V6 |
+| 5.14a (8b+) | V8/9 | **15** 1×V8/9 + 1×V6/7 | **21.5** 1×V8/9 + 2×V6/7 | **28** 1×V8/9 + 3×V6/7 | **34.5** 1×V8/9 + 4×V6/7 | **41** 1×V8/9 + 5×V6/7 | **47.5** 1×V8/9 + 6×V6/7 |
+
+V0/1 = entre V0 y V1. Como en la fórmula un V0 vale 0, las vías de 5.11b o menos casi no suman intensidad.
 
 ## Pantallas
 

@@ -374,3 +374,9 @@ nav a { font-size: 11px; }
 .tabla thead th { font-size: 12px; color: var(--suave); font-weight: 600; }
 .tabla td b, .tabla td small { display: block; }
 .tabla td small { color: var(--suave); font-size: 11px; }
+
+/* Tabla de equivalencias */
+.equivalencias summary { cursor: pointer; font-weight: 600; padding: 10px 0; color: var(--acento); }
+.tabla-equiv th small { display: block; color: var(--suave); font-weight: normal; font-size: 11px; }
+.tabla-equiv td { white-space: nowrap; }
+.tabla-equiv td b { font-size: 15px; }

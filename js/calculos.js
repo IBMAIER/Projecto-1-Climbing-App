@@ -6,43 +6,60 @@
 
 export const GRADOS = ["V0", "V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10"];
 
-// Vías de deportiva: grado YDS, equivalente francés y equivalencia en V para
-// calcular intensidad. La equivalencia está anclada a tu nivel actual
-// (5.12d / 7c ≈ V7). Es una aproximación: ajusta los valores "v" si lo
-// sientes distinto.
+// Vías de deportiva: grado YDS, equivalente francés y grado V del crux
+// (el paso más difícil de la vía, medido como boulder). Medio grado por
+// letra (2.5 = entre V2 y V3), anclado en 5.12d -> crux V5.
 export const VIAS = [
-  { yds: "5.9",   fr: "5c",  v: 0 },
-  { yds: "5.10a", fr: "6a",  v: 0 },
-  { yds: "5.10b", fr: "6a+", v: 0.5 },
-  { yds: "5.10c", fr: "6b",  v: 1 },
-  { yds: "5.10d", fr: "6b+", v: 1.5 },
-  { yds: "5.11a", fr: "6c",  v: 2 },
-  { yds: "5.11b", fr: "6c",  v: 2.5 },
-  { yds: "5.11c", fr: "6c+", v: 3 },
-  { yds: "5.11d", fr: "7a",  v: 4 },
-  { yds: "5.12a", fr: "7a+", v: 4.5 },
-  { yds: "5.12b", fr: "7b",  v: 5 },
-  { yds: "5.12c", fr: "7b+", v: 6 },
-  { yds: "5.12d", fr: "7c",  v: 7 },
-  { yds: "5.13a", fr: "7c+", v: 7.5 },
-  { yds: "5.13b", fr: "8a",  v: 8 },
-  { yds: "5.13c", fr: "8a+", v: 9 },
-  { yds: "5.13d", fr: "8b",  v: 10 },
-  { yds: "5.14a", fr: "8b+", v: 11 },
+  { yds: "5.9",   fr: "5c",  crux: 0 },
+  { yds: "5.10a", fr: "6a",  crux: 0 },
+  { yds: "5.10b", fr: "6a+", crux: 0 },
+  { yds: "5.10c", fr: "6b",  crux: 0.5 },
+  { yds: "5.10d", fr: "6b+", crux: 1 },
+  { yds: "5.11a", fr: "6c",  crux: 1.5 },
+  { yds: "5.11b", fr: "6c",  crux: 2 },
+  { yds: "5.11c", fr: "6c+", crux: 2.5 },
+  { yds: "5.11d", fr: "7a",  crux: 3 },
+  { yds: "5.12a", fr: "7a+", crux: 3.5 },
+  { yds: "5.12b", fr: "7b",  crux: 4 },
+  { yds: "5.12c", fr: "7b+", crux: 4.5 },
+  { yds: "5.12d", fr: "7c",  crux: 5 },
+  { yds: "5.13a", fr: "7c+", crux: 5.5 },
+  { yds: "5.13b", fr: "8a",  crux: 6.5 },
+  { yds: "5.13c", fr: "8a+", crux: 7 },
+  { yds: "5.13d", fr: "8b",  crux: 8 },
+  { yds: "5.14a", fr: "8b+", crux: 8.5 },
 ];
 
-// Cuántos "bloques" vale una vía en la intensidad. 1 = una vía cuenta como
-// un bloque de su grado equivalente.
-export const FACTOR_VIA = 1;
+// Descomposición de una vía en boulders:
+//   - La vía se divide en tramos de METROS_POR_TRAMO (≈ 6 movimientos, el
+//     largo de un boulder típico).
+//   - 1 tramo es el crux: vale un boulder del grado crux.
+//   - Los demás tramos son escalada continua: valen DESCUENTO_TRAMO grados V
+//     menos que el crux (mínimo V0).
+//   Intensidad de la vía = crux + (tramos − 1) × max(0, crux − DESCUENTO_TRAMO)
+export const METROS_POR_TRAMO = 5;
+export const DESCUENTO_TRAMO = 2;
+export const LARGO_VIA_DEFECTO = 20;
+export const LARGOS_TABLA = [10, 15, 20, 25, 30, 35];
 
 const VIA_POR_YDS = Object.fromEntries(VIAS.map((x) => [x.yds, x]));
 
-export function numeroGrado(grado) {
-  return parseInt(String(grado).replace(/\D/g, ""), 10) || 0;
+export function descomponerVia(yds, largoM = LARGO_VIA_DEFECTO) {
+  const crux = VIA_POR_YDS[yds]?.crux ?? 0;
+  const tramos = Math.max(1, Math.round(largoM / METROS_POR_TRAMO));
+  const tramo = Math.max(0, crux - DESCUENTO_TRAMO);
+  return {
+    crux,
+    tramo,
+    tramos,
+    intensidad: Math.round((crux + (tramos - 1) * tramo) * 10) / 10,
+    texto: tramos > 1 ? `1×${textoV(crux)} + ${tramos - 1}×${textoV(tramo)}` : `1×${textoV(crux)}`,
+  };
 }
 
-export function equivalenteVia(yds) {
-  return VIA_POR_YDS[yds]?.v ?? 0;
+// 2.5 -> "V2/3", 5 -> "V5"
+export function textoV(n) {
+  return n % 1 ? `V${Math.floor(n)}/${Math.ceil(n)}` : `V${n}`;
 }
 
 export function nombreVia(yds) {
@@ -52,6 +69,10 @@ export function nombreVia(yds) {
 
 function indiceVia(yds) {
   return VIAS.findIndex((x) => x.yds === yds);
+}
+
+export function numeroGrado(grado) {
+  return parseInt(String(grado).replace(/\D/g, ""), 10) || 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -219,11 +240,12 @@ export function normalizar(s) {
 const sumar = (obj, valor) =>
   Object.entries(obj || {}).reduce((t, [g, n]) => t + n * valor(g), 0);
 
-// Intensidad = Σ bloques × grado V  +  Σ vías × equivalente V × FACTOR_VIA
-// Devuelve null si la sesión no tiene bloques con grados.
+// Intensidad = Σ bloques × grado V  +  Σ vías × intensidad de la vía
+// (según su grado y largo, ver descomponerVia). null si no hay grados.
 export function intensidadBloque(b) {
   if (!b.grados && !b.vias) return null;
-  const total = sumar(b.grados, numeroGrado) + FACTOR_VIA * sumar(b.vias, equivalenteVia);
+  const largo = Number(b.largoM) || LARGO_VIA_DEFECTO;
+  const total = sumar(b.grados, numeroGrado) + sumar(b.vias, (g) => descomponerVia(g, largo).intensidad);
   return Math.round(total * 10) / 10;
 }
 

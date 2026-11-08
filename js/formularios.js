@@ -10,7 +10,7 @@
 //     el cursor mientras escribes).
 
 import {
-  GRADOS, VIAS, ESTILOS, FISICO, TIPOS_BLOQUE, PLANTILLAS, PARTES_CALENTAMIENTO,
+  GRADOS, VIAS, LARGO_VIA_DEFECTO, descomponerVia, ESTILOS, FISICO, TIPOS_BLOQUE, PLANTILLAS, PARTES_CALENTAMIENTO,
   hoyISO, intensidad, intensidadBloque, totalBloques, totalVias, gradoMaximo, viaMaxima,
   duracionTotal,
 } from "./calculos.js";
@@ -71,11 +71,12 @@ export function bloqueNuevo(tipo, sesiones, extra = {}) {
         caidas: 0,
         grados: {},
         vias: {},
+        largoM: prev.largoM ?? LARGO_VIA_DEFECTO,
       };
     case "vias":
-      return { ...base, lugar: prev.lugar || "", vias: {} };
+      return { ...base, lugar: prev.lugar || "", vias: {}, largoM: prev.largoM ?? LARGO_VIA_DEFECTO };
     case "roca":
-      return { ...base, lugar: "", grados: {}, vias: {} };
+      return { ...base, lugar: "", grados: {}, vias: {}, largoM: prev.largoM ?? LARGO_VIA_DEFECTO };
     case "fisico": {
       const ultimoFisico = ultimoBloque(sesiones, "fisico");
       const variante = extra.variante || (ultimoFisico?.variante === "A" ? "B" : "A");
@@ -200,7 +201,12 @@ function gradosBoulder(i, b, etiqueta = "Bloques encadenados por grado") {
 }
 
 function gradosVias(i, b, etiqueta = "Vías encadenadas por grado") {
-  return cuadricula(`bloques.${i}.vias`, b.vias, ITEMS_VIAS, etiqueta);
+  const largo = b.largoM ?? LARGO_VIA_DEFECTO;
+  const max = viaMaxima(b);
+  const ejemplo = max ? descomponerVia(max, largo) : null;
+  return campo("Largo típico de las vías", contador(`bloques.${i}.largoM`, largo, 5, " m", 5)) +
+    (ejemplo ? `<p class="pista">Cada ${max} de ${largo} m ≈ ${ejemplo.texto} (intensidad ${ejemplo.intensidad}).</p>` : "") +
+    cuadricula(`bloques.${i}.vias`, b.vias, ITEMS_VIAS, etiqueta);
 }
 
 function resumenGrados(b) {

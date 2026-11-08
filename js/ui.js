@@ -72,7 +72,9 @@ export function describirBloque(b) {
       break;
   }
   if (b.grados && Object.keys(b.grados).length) l.push(`Bloques: ${listaGrados(b.grados)}`);
-  if (b.vias && Object.keys(b.vias).length) l.push(`Vías: ${listaVias(b.vias)}`);
+  if (b.vias && Object.keys(b.vias).length) {
+    l.push(`Vías: ${listaVias(b.vias)}${b.largoM ? ` (largo ~${b.largoM} m)` : ""}`);
+  }
   if (b.nota) l.push(`“${b.nota}”`);
   return l.filter(Boolean);
 }

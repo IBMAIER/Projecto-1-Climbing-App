@@ -85,9 +85,11 @@ export function numeroGrado(grado) {
 
 export const TIPOS_BLOQUE = {
   calentamiento: { nombre: "Calentamiento", icono: "🤸", duracion: 40,
-    pista: "Movilidad, core y espalda, multipresa subiendo el esfuerzo y escalada progresiva." },
-  dedos: { nombre: "Fuerza de dedos", icono: "✊", duracion: 20,
-    pista: "Cumplido si todas las series de 10 s salen con 2-3 s de margen. Progresar: +1-2 kg." },
+    pista: "Elongación, core, espalda y bloqueos." },
+  dedos: { nombre: "Fuerza de dedos", icono: "✊", duracion: 30,
+    pista: "Cumplido si todas las series salen con 2-3 s de margen. Progresar: +1-2 kg." },
+  boulder_cal: { nombre: "Boulder de calentamiento", icono: "🌡️", duracion: 20,
+    pista: "Bloques fáciles para entrar en calor; suman al volumen del día." },
   board: { nombre: "Board", icono: "🧗", duracion: 90,
     pista: "Cumplido si encadenas 1 problema de tu máximo o sacas todos los movimientos de uno más duro." },
   boulder: { nombre: "Boulder", icono: "🔥", duracion: 120,
@@ -104,11 +106,30 @@ export const TIPOS_BLOQUE = {
 };
 
 export const PARTES_CALENTAMIENTO = [
-  ["movilidad", "Movilidad y elongación"],
-  ["core", "Core y espalda"],
-  ["multipresa", "Multipresa (half crimp y pinza)"],
-  ["progresiva", "Escalada progresiva"],
+  ["elongacion", "Elongación"],
+  ["core", "Core"],
+  ["espalda", "Espalda"],
+  ["bloqueos", "Bloqueos"],
 ];
+
+// Nombres de partes de calentamiento de versiones anteriores (para mostrarlas).
+export const PARTES_CALENTAMIENTO_ANTIGUAS = {
+  movilidad: "Movilidad y elongación",
+  multipresa: "Multipresa",
+  progresiva: "Escalada progresiva",
+};
+
+// Fuerza de dedos por defecto: grupos de series iguales.
+export const DEDOS_DEFECTO = [
+  { agarre: "half_crimp", series: 5, seg: 5, kg: 0, margenSeg: 3, descansoSeg: 180 },
+  { agarre: "pinza", series: 5, seg: 5, kg: 0, margenSeg: 3, descansoSeg: 180 },
+];
+
+// Boulder de calentamiento por defecto.
+export const BOULDER_CAL_DEFECTO = { V3: 5, V4: 2 };
+
+// Inicio común de las sesiones de escalada en el gimnasio.
+const INICIO_GIMNASIO = [{ tipo: "calentamiento" }, { tipo: "dedos" }, { tipo: "boulder_cal" }];
 
 export const ESTILOS = [
   "regletas", "pinzas", "romos", "compresión", "dinámico", "placa", "desplome", "técnico",
@@ -134,21 +155,21 @@ export const FISICO = {
 export const PLANTILLAS = {
   board: {
     nombre: "Board", icono: "🧗", escalada: true,
-    bloques: [{ tipo: "calentamiento" }, { tipo: "dedos" }, { tipo: "board" }],
+    bloques: [...INICIO_GIMNASIO, { tipo: "board" }],
     objetivo: "Fuerza y potencia en movimientos límite.",
     criterio: "Encadenas al menos 1 problema de tu máximo, o sacas todos los movimientos de uno más duro.",
     progresar: "Sube un grado el rango de trabajo, o el ángulo 5°.",
   },
   resistencia: {
     nombre: "Resistencia", icono: "🔁", escalada: true,
-    bloques: [{ tipo: "calentamiento" }, { tipo: "resistencia" }],
+    bloques: [...INICIO_GIMNASIO, { tipo: "resistencia" }],
     objetivo: "Aguantar más escalada continua con buena técnica.",
     criterio: "Completas el formato elegido (4x4, intervalos o vías) cayéndote como máximo una vez.",
     progresar: "Cambia una sola cosa: más grado, menos descanso o una ronda más.",
   },
   max_boulder: {
     nombre: "Max boulder", icono: "🔥", escalada: true,
-    bloques: [{ tipo: "calentamiento" }, { tipo: "dedos" }, { tipo: "boulder" }],
+    bloques: [...INICIO_GIMNASIO, { tipo: "boulder" }],
     objetivo: "Escalar al límite en estilos variados.",
     criterio: "Encadenas un V7 o más, o avanzas claramente en un V8. Tocaste al menos 3 estilos.",
     progresar: "Cuando los V7 salgan en 1-2 sesiones, pasa a trabajar V8.",
@@ -240,7 +261,7 @@ export function planDelDia(iso, planes = []) {
 
 export function esEscalada(sesion) {
   return (sesion.bloques || []).some((b) =>
-    ["board", "boulder", "resistencia", "vias", "roca", "test"].includes(b.tipo));
+    ["board", "boulder", "boulder_cal", "resistencia", "vias", "roca", "test"].includes(b.tipo));
 }
 
 // ---------------------------------------------------------------------------
@@ -256,21 +277,35 @@ const V1 = {
 };
 
 export function normalizar(s) {
-  if (Array.isArray(s.bloques)) return s;
-  const det = s.detalle || {};
-  let tipo, bloque;
-  if (s.tipo === "fisico") {
-    tipo = det.variante === "B" ? "fisico_b" : "fisico_a";
-    bloque = "fisico";
-  } else {
-    [tipo, bloque] = V1[s.tipo] || ["libre", "otro"];
+  let sesion = s;
+  if (!Array.isArray(s.bloques)) {
+    const det = s.detalle || {};
+    let tipo, bloque;
+    if (s.tipo === "fisico") {
+      tipo = det.variante === "B" ? "fisico_b" : "fisico_a";
+      bloque = "fisico";
+    } else {
+      [tipo, bloque] = V1[s.tipo] || ["libre", "otro"];
+    }
+    const { detalle, ...resto } = s;
+    sesion = {
+      ...resto,
+      tipo,
+      bloques: [{ id: "b1", tipo: bloque, duracionMin: s.duracionMin || 0, ...det }],
+    };
   }
-  const { detalle, ...resto } = s;
-  return {
-    ...resto,
-    tipo,
-    bloques: [{ id: "b1", tipo: bloque, duracionMin: s.duracionMin || 0, ...det }],
-  };
+  // Fuerza de dedos antigua (una lista de series) -> grupos de series.
+  if (sesion.bloques.some((b) => b.tipo === "dedos" && b.series && !b.grupos)) {
+    sesion = {
+      ...sesion,
+      bloques: sesion.bloques.map((b) => {
+        if (b.tipo !== "dedos" || !b.series || b.grupos) return b;
+        const { series, ...resto } = b;
+        return { ...resto, grupos: series.map((x) => ({ ...x, series: 1, descansoSeg: x.descansoSeg ?? 180 })) };
+      }),
+    };
+  }
+  return sesion;
 }
 
 // ---------------------------------------------------------------------------
@@ -350,7 +385,7 @@ function haceDias(n) {
 export function benchmarkDedos(sesiones, agarre) {
   const datos = bloquesDe(sesiones, ["dedos"])
     .map(({ s, b }) => {
-      const kgs = (b.series || []).filter((x) => x.agarre === agarre).map((x) => Number(x.kg));
+      const kgs = (b.grupos || []).filter((x) => x.agarre === agarre && x.series > 0).map((x) => Number(x.kg));
       return kgs.length ? { fecha: s.fecha, kg: Math.max(...kgs), mm: b.regletaMm } : null;
     })
     .filter(Boolean);

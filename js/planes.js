@@ -124,13 +124,18 @@ export function crearEditorPlan(contenedor, { plan, planes, alGuardar, alCancela
     return planes.filter((p) => p.id !== estado.id && p.inicio <= fin && finPlan(p) >= estado.inicio);
   }
 
+  function textoDescargas() {
+    if (!estado.descargaCada) return "0 = sin descarga.";
+    const lista = [];
+    for (let s = estado.descargaCada; s <= estado.semanas; s += estado.descargaCada) lista.push(s);
+    return lista.length
+      ? `Semanas de descarga: ${lista.join(", ")} (volumen a la mitad, sin ir al límite).`
+      : "El plan es más corto que el intervalo de descarga.";
+  }
+
   function dibujar() {
     const r = resumen();
     const sol = solapes();
-    const descargas = [];
-    if (estado.descargaCada > 0) {
-      for (let s = estado.descargaCada; s <= estado.semanas; s += estado.descargaCada) descargas.push(s);
-    }
 
     contenedor.innerHTML = `
       <h2>${estado.id ? "Editar plan" : "Nuevo plan"}</h2>
@@ -148,7 +153,8 @@ export function crearEditorPlan(contenedor, { plan, planes, alGuardar, alCancela
         <div class="campo"><span class="etiqueta">Duración</span>
           <div class="contador">
             <button type="button" data-plan="semanas" data-delta="-1">−</button>
-            <span>${estado.semanas} sem</span>
+            <label class="valor-editable"><input type="number" inputmode="numeric" data-plan-num="semanas"
+              data-min="1" data-max="52" value="${estado.semanas}" aria-label="Semanas"><span>sem</span></label>
             <button type="button" data-plan="semanas" data-delta="1">+</button>
           </div></div>
       </div>
@@ -189,10 +195,11 @@ export function crearEditorPlan(contenedor, { plan, planes, alGuardar, alCancela
       <div class="campo"><span class="etiqueta">Cada cuántas semanas</span>
         <div class="contador">
           <button type="button" data-plan="descarga" data-delta="-1">−</button>
-          <span>${estado.descargaCada ? `${estado.descargaCada} sem` : "Sin descarga"}</span>
+          <label class="valor-editable"><input type="number" inputmode="numeric" data-plan-num="descargaCada"
+            data-min="0" data-max="12" value="${estado.descargaCada}" aria-label="Semanas entre descargas"><span>sem</span></label>
           <button type="button" data-plan="descarga" data-delta="1">+</button>
         </div></div>
-      ${descargas.length ? `<p class="ayuda">Semanas de descarga: ${descargas.join(", ")} (volumen a la mitad, sin ir al límite).</p>` : ""}
+      <p class="ayuda" id="descargas-plan">${textoDescargas()}</p>
       <label class="check">
         <input type="checkbox" data-plan-check="testEnDescarga" ${estado.testEnDescarga ? "checked" : ""}>
         Test máximo en la descarga (reemplaza el primer día de escalada de esa semana)
@@ -260,20 +267,37 @@ export function crearEditorPlan(contenedor, { plan, planes, alGuardar, alCancela
     }
     const check = ev.target.dataset.planCheck;
     if (check) estado[check] = ev.target.checked;
+    const num = ev.target.dataset.planNum;
+    if (num && ev.target.value !== "" && !isNaN(Number(ev.target.value))) {
+      const { min, max } = ev.target.dataset;
+      estado[num] = Math.min(Number(max), Math.max(Number(min), Math.round(Number(ev.target.value))));
+      const p = contenedor.querySelector("#fechas-plan");
+      if (p && estado.inicio) p.textContent = `Del ${fechaCorta(estado.inicio)} al ${fechaCorta(finPlan(estado))}.`;
+      const d = contenedor.querySelector("#descargas-plan");
+      if (d) d.textContent = textoDescargas();
+    }
   }
 
   // Al salir del campo de fecha, redibujar (actualiza avisos de cruce).
   function alCambiar(ev) {
     if (ev.target.dataset.campo === "inicio") dibujar();
+    // Números: mostrar el valor guardado (por si quedó vacío o fuera de rango).
+    if (ev.target.dataset.planNum) ev.target.value = estado[ev.target.dataset.planNum];
+  }
+
+  function alEnfocar(ev) {
+    if (ev.target.matches?.("input[type=number]")) ev.target.select();
   }
 
   contenedor.addEventListener("click", alHacerClick);
   contenedor.addEventListener("input", alEscribir);
   contenedor.addEventListener("change", alCambiar);
+  contenedor.addEventListener("focusin", alEnfocar);
   dibujar();
   return () => {
     contenedor.removeEventListener("click", alHacerClick);
     contenedor.removeEventListener("input", alEscribir);
     contenedor.removeEventListener("change", alCambiar);
+    contenedor.removeEventListener("focusin", alEnfocar);
   };
 }

@@ -11,6 +11,7 @@
 
 import {
   GRADOS, VIAS, LARGO_VIA_DEFECTO, descomponerVia, ESTILOS, FISICO, TIPOS_BLOQUE, PLANTILLAS, PARTES_CALENTAMIENTO,
+  DEDOS_DEFECTO, BOULDER_CAL_DEFECTO,
   hoyISO, intensidad, intensidadBloque, totalBloques, totalVias, gradoMaximo, viaMaxima,
   duracionTotal,
 } from "./calculos.js";
@@ -51,13 +52,15 @@ export function bloqueNuevo(tipo, sesiones, extra = {}) {
         ...base,
         duracionMin: prev.duracionMin ?? base.duracionMin,
         regletaMm: prev.regletaMm ?? 20,
-        series: prev.series?.length
-          ? copia(prev.series)
-          : [
-              { agarre: "half_crimp", kg: 20, seg: 10, margenSeg: 3 },
-              { agarre: "pinza", kg: 20, seg: 10, margenSeg: 3 },
-            ],
+        // Siempre tu configuración habitual (5×5 s half crimp + 5×5 s pinza),
+        // con el lastre de tu última sesión para cada agarre.
+        grupos: DEDOS_DEFECTO.map((g) => {
+          const anterior = prev.grupos?.find((x) => x.agarre === g.agarre);
+          return { ...g, kg: anterior?.kg ?? g.kg };
+        }),
       };
+    case "boulder_cal":
+      return { ...base, grados: { ...BOULDER_CAL_DEFECTO } };
     case "board":
       return { ...base, tablero: prev.tablero || "Kilter", angulo: prev.angulo ?? 40, grados: {}, gradoTrabajado: null };
     case "boulder":
@@ -161,11 +164,17 @@ function escala(ruta, min, max, actual) {
   return `<div class="escala">${opciones(ruta, lista, actual, true)}</div>`;
 }
 
+// Contador: botones − / + y el número editable con el teclado.
 function contador(ruta, valor, paso = 1, sufijo = "", min = 0) {
+  const decimales = String(paso).includes(".") ? "decimal" : "numeric";
   return `<div class="contador">
-    <button type="button" data-accion="sumar" data-campo="${ruta}" data-delta="${-paso}" data-min="${min}">−</button>
-    <span>${valor ?? 0}${sufijo}</span>
-    <button type="button" data-accion="sumar" data-campo="${ruta}" data-delta="${paso}" data-min="${min}">+</button>
+    <button type="button" data-accion="sumar" data-campo="${ruta}" data-delta="${-paso}" data-min="${min}" aria-label="Menos">−</button>
+    <label class="valor-editable">
+      <input type="number" inputmode="${decimales}" step="any" data-campo="${ruta}" data-num data-min="${min}"
+        value="${valor ?? 0}" aria-label="Valor">
+      ${sufijo ? `<span>${sufijo.trim()}</span>` : ""}
+    </label>
+    <button type="button" data-accion="sumar" data-campo="${ruta}" data-delta="${paso}" data-min="${min}" aria-label="Más">+</button>
   </div>`;
 }
 
@@ -209,12 +218,12 @@ function gradosVias(i, b, etiqueta = "Vías encadenadas por grado") {
     cuadricula(`bloques.${i}.vias`, b.vias, ITEMS_VIAS, etiqueta);
 }
 
-function resumenGrados(b) {
+function resumenGrados(b, i) {
   const cifras = [];
   if (b.grados) cifras.push(["Bloques", totalBloques(b)], ["Máx", gradoMaximo(b) || "—"]);
   if (b.vias && totalVias(b)) cifras.push(["Vías", totalVias(b)], ["Vía máx", viaMaxima(b) || "—"]);
   cifras.push(["Intensidad", intensidadBloque(b) ?? 0]);
-  return `<div class="resumen-intensidad">${cifras.map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join("")}</div>`;
+  return `<div class="resumen-intensidad" data-resumen="${i}">${cifras.map(([k, v]) => `<div><small>${k}</small><b>${v}</b></div>`).join("")}</div>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -227,34 +236,39 @@ const camposBloque = {
   },
 
   dedos(b, i) {
-    const filas = b.series.map((s, j) => `
+    const filas = b.grupos.map((g, j) => `
       <div class="serie">
         <div class="serie-cabecera">
-          <b>Serie ${j + 1}</b>
-          <button type="button" class="link peligro" data-accion="quitar-serie" data-bloque="${i}" data-indice="${j}">Quitar</button>
+          ${opciones(`bloques.${i}.grupos.${j}.agarre`, [["half_crimp", "Half crimp"], ["pinza", "Pinza"]], g.agarre)}
+          <button type="button" class="link peligro" data-accion="quitar-grupo" data-bloque="${i}" data-indice="${j}">Quitar</button>
         </div>
-        ${opciones(`bloques.${i}.series.${j}.agarre`, [["half_crimp", "Half crimp"], ["pinza", "Pinza"]], s.agarre)}
         <div class="fila-contadores">
-          ${campo("Kg", contador(`bloques.${i}.series.${j}.kg`, s.kg, 1, " kg", -100))}
-          ${campo("Segundos", contador(`bloques.${i}.series.${j}.seg`, s.seg, 1, " s"))}
-          ${campo("Margen", contador(`bloques.${i}.series.${j}.margenSeg`, s.margenSeg, 1, " s"))}
+          ${campo("Series", contador(`bloques.${i}.grupos.${j}.series`, g.series, 1, "", 0))}
+          ${campo("Segundos", contador(`bloques.${i}.grupos.${j}.seg`, g.seg, 1, " s"))}
+          ${campo("Lastre", contador(`bloques.${i}.grupos.${j}.kg`, g.kg, 1, " kg", -100))}
+          ${campo("Margen", contador(`bloques.${i}.grupos.${j}.margenSeg`, g.margenSeg, 1, " s"))}
+          ${campo("Descanso", contador(`bloques.${i}.grupos.${j}.descansoSeg`, g.descansoSeg, 15, " s"))}
         </div>
       </div>`).join("");
     return campo("Regleta", contador(`bloques.${i}.regletaMm`, b.regletaMm, 1, " mm")) +
-      `<div class="campo"><span class="etiqueta">Series</span>${filas}
-        <button type="button" class="secundario" data-accion="agregar-serie" data-bloque="${i}">+ Agregar serie</button></div>`;
+      `<div class="campo"><span class="etiqueta">Series <small>(lastre: kg agregados; negativo = asistencia. Margen: segundos que te sobraban)</small></span>${filas}
+        <button type="button" class="secundario" data-accion="agregar-grupo" data-bloque="${i}">+ Agregar grupo de series</button></div>`;
+  },
+
+  boulder_cal(b, i) {
+    return gradosBoulder(i, b, "Bloques de calentamiento") + resumenGrados(b, i);
   },
 
   board(b, i) {
     return campo("Tablero", opciones(`bloques.${i}.tablero`, [["Kilter", "Kilter"], ["Tension", "Tension"]], b.tablero)) +
       campo("Ángulo", contador(`bloques.${i}.angulo`, b.angulo, 5, "°")) +
-      gradosBoulder(i, b) + resumenGrados(b) +
+      gradosBoulder(i, b) + resumenGrados(b, i) +
       campo("Grado trabajado sin encadenar <small>(opcional)</small>",
         opciones(`bloques.${i}.gradoTrabajado`, GRADOS.slice(3).map((g) => [g, g]), b.gradoTrabajado));
   },
 
   boulder(b, i) {
-    return gradosBoulder(i, b) + resumenGrados(b) +
+    return gradosBoulder(i, b) + resumenGrados(b, i) +
       campo(`Estilos tocados <small>(${b.estilos.length}; objetivo 3 o más)</small>`,
         alternables(`bloques.${i}.estilos`, ESTILOS.map((e) => [e, e]), b.estilos)) +
       campo("Proyecto <small>(opcional)</small>", texto(`bloques.${i}.proyecto`, b.proyecto, "Nombre del bloque")) +
@@ -271,18 +285,18 @@ const camposBloque = {
         ${campo("Caídas", contador(`bloques.${i}.caidas`, b.caidas))}
       </div>` +
       (enVias ? gradosVias(i, b, "Vías completadas por grado") : gradosBoulder(i, b, "Bloques completados por grado")) +
-      resumenGrados(b);
+      resumenGrados(b, i);
   },
 
   vias(b, i) {
     return campo("Lugar <small>(opcional)</small>", texto(`bloques.${i}.lugar`, b.lugar, "Gimnasio o sector")) +
-      gradosVias(i, b) + resumenGrados(b);
+      gradosVias(i, b) + resumenGrados(b, i);
   },
 
   roca(b, i) {
     return campo("Lugar", texto(`bloques.${i}.lugar`, b.lugar, "Ej: Las Chilcas")) +
       gradosBoulder(i, b, "Bloques encadenados") +
-      gradosVias(i, b, "Vías encadenadas") + resumenGrados(b);
+      gradosVias(i, b, "Vías encadenadas") + resumenGrados(b, i);
   },
 
   fisico(b, i) {
@@ -318,6 +332,14 @@ const camposBloque = {
     return campo("Qué hiciste", texto(`bloques.${i}.nombre`, b.nombre, "Ej: antagonistas, yoga, técnica"));
   },
 };
+
+function resumenDia(estado) {
+  return `<div class="resumen-dia">
+        <span>${estado.bloques.length} bloques</span>
+        <span>${duracionTotal(estado)} min</span>
+        <span>Intensidad <b>${intensidad(estado) ?? 0}</b></span>
+      </div>`;
+}
 
 function tarjetaBloque(b, i, total) {
   const t = TIPOS_BLOQUE[b.tipo];
@@ -375,11 +397,7 @@ export function crearFormulario(contenedor, { sesion, sesiones, tipo, fecha, alG
       </div>` : ""}
       ${campo("Fecha", texto("fecha", estado.fecha, "", "date"))}
 
-      <div class="resumen-dia">
-        <span>${estado.bloques.length} bloques</span>
-        <span>${duracionTotal(estado)} min</span>
-        <span>Intensidad <b>${inten ?? 0}</b></span>
-      </div>
+      ${resumenDia(estado)}
 
       ${estado.bloques.map((b, i) => tarjetaBloque(b, i, estado.bloques.length)).join("")}
 
@@ -453,13 +471,13 @@ export function crearFormulario(contenedor, { sesion, sesiones, tipo, fecha, alG
         else lista.push(valor);
         break;
       }
-      case "agregar-serie": {
-        const series = estado.bloques[iBloque].series;
-        series.push(copia(series[series.length - 1] || { agarre: "half_crimp", kg: 20, seg: 10, margenSeg: 3 }));
+      case "agregar-grupo": {
+        const grupos = estado.bloques[iBloque].grupos;
+        grupos.push(copia(grupos[grupos.length - 1] || DEDOS_DEFECTO[0]));
         break;
       }
-      case "quitar-serie":
-        estado.bloques[iBloque].series.splice(Number(b.dataset.indice), 1);
+      case "quitar-grupo":
+        estado.bloques[iBloque].grupos.splice(Number(b.dataset.indice), 1);
         break;
       case "menu-bloques":
         menuAbierto = !menuAbierto;
@@ -495,17 +513,50 @@ export function crearFormulario(contenedor, { sesion, sesiones, tipo, fecha, alG
   }
 
   function alEscribir(ev) {
-    const ruta = ev.target.dataset.campo;
-    if (ruta) escribir(estado, ruta, ev.target.value);
+    const el = ev.target;
+    const ruta = el.dataset.campo;
+    if (!ruta) return;
+    if ("num" in el.dataset) {
+      if (el.value === "" || isNaN(Number(el.value))) return; // aún escribiendo
+      escribir(estado, ruta, Math.max(Number(el.dataset.min), Number(el.value)));
+      actualizarResumenes();
+    } else {
+      escribir(estado, ruta, el.value);
+    }
+  }
+
+  // Al salir de un número: si quedó vacío o bajo el mínimo, mostrar el valor guardado.
+  function alSalir(ev) {
+    const el = ev.target;
+    if (el.dataset.campo && "num" in el.dataset) el.value = leer(estado, el.dataset.campo) ?? 0;
+  }
+
+  // Actualiza totales e intensidad sin redibujar (para no perder el foco).
+  function actualizarResumenes() {
+    const dia = contenedor.querySelector(".resumen-dia");
+    if (dia) dia.outerHTML = resumenDia(estado);
+    contenedor.querySelectorAll("[data-resumen]").forEach((el) => {
+      const i = Number(el.dataset.resumen);
+      if (estado.bloques[i]) el.outerHTML = resumenGrados(estado.bloques[i], i);
+    });
+  }
+
+  // Seleccionar el número completo al tocarlo, para reemplazarlo de una vez.
+  function alEnfocar(ev) {
+    if (ev.target.matches?.("input[data-num]")) ev.target.select();
   }
 
   contenedor.addEventListener("click", alHacerClick);
   contenedor.addEventListener("input", alEscribir);
+  contenedor.addEventListener("focusout", alSalir);
+  contenedor.addEventListener("focusin", alEnfocar);
   dibujar();
 
   return () => {
     contenedor.removeEventListener("click", alHacerClick);
     contenedor.removeEventListener("input", alEscribir);
+    contenedor.removeEventListener("focusout", alSalir);
+    contenedor.removeEventListener("focusin", alEnfocar);
   };
 }
 

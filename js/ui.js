@@ -2,7 +2,7 @@
 // (tarjeta de sesión, detalle completo y planificación de un día).
 
 import {
-  TIPOS_BLOQUE, PLANTILLAS, PARTES_CALENTAMIENTO, GRADOS, VIAS,
+  TIPOS_BLOQUE, PLANTILLAS, PARTES_CALENTAMIENTO, PARTES_CALENTAMIENTO_ANTIGUAS, GRADOS, VIAS,
   intensidad, intensidadBloque, duracionTotal, gradoMaximo, viaMaxima, formatoFecha,
 } from "./calculos.js";
 
@@ -33,14 +33,15 @@ export function describirBloque(b) {
   const l = [];
   switch (b.tipo) {
     case "calentamiento": {
-      const hechas = PARTES_CALENTAMIENTO.filter(([k]) => b.partes?.includes(k)).map(([, t]) => t);
+      const nombres = { ...PARTES_CALENTAMIENTO_ANTIGUAS, ...Object.fromEntries(PARTES_CALENTAMIENTO) };
+      const hechas = (b.partes || []).map((k) => nombres[k] || k);
       if (hechas.length) l.push(hechas.join(" · "));
       break;
     }
     case "dedos":
       if (b.regletaMm) l.push(`Regleta ${b.regletaMm} mm`);
-      (b.series || []).forEach((x, i) =>
-        l.push(`Serie ${i + 1}: ${AGARRE[x.agarre] || x.agarre} ${x.kg} kg × ${x.seg} s (margen ${x.margenSeg} s)`));
+      (b.grupos || []).forEach((x) =>
+        l.push(`${AGARRE[x.agarre] || x.agarre}: ${x.series} × ${x.seg} s @ ${x.kg} kg · margen ${x.margenSeg} s · descanso ${x.descansoSeg ?? "?"} s`));
       break;
     case "board":
       l.push(`${b.tablero || ""} ${b.angulo != null ? `${b.angulo}°` : ""}`.trim());

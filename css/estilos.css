@@ -411,3 +411,28 @@ nav a { font-size: 10px; }
 .sync.error { color: var(--peligro); }
 .sync.local { color: var(--suave); }
 .aviso-error { background: color-mix(in srgb, var(--peligro) 15%, var(--fondo)); border-color: var(--peligro); }
+
+/* Números editables con teclado dentro de los contadores */
+.valor-editable {
+  display: inline-flex; align-items: baseline; justify-content: center; gap: 3px;
+  min-width: 72px; padding: 4px 6px; border-radius: 8px;
+  border: 1px dashed transparent; cursor: text;
+}
+.valor-editable:hover, .valor-editable:focus-within { border-color: var(--borde); background: var(--superficie); }
+.valor-editable input {
+  width: 3.6em; border: none; background: transparent; color: var(--texto);
+  font: inherit; font-size: 18px; font-weight: 600; text-align: right; padding: 0;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.valor-editable input::-webkit-outer-spin-button,
+.valor-editable input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.valor-editable input:focus { outline: none; }
+.valor-editable span { font-size: 14px; color: var(--suave); font-weight: 600; }
+.serie-cabecera { align-items: center; gap: 8px; }
+
+/* Contadores compactos cuando van varios en una fila (dos por fila en celular) */
+.fila-contadores { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 12px; }
+.fila-contadores .contador { gap: 2px; }
+.fila-contadores .contador button { width: 36px; min-width: 36px; min-height: 36px; font-size: 18px; }
+.fila-contadores .valor-editable { min-width: 0; flex: 1; padding: 4px 2px; }
+.fila-contadores .valor-editable input { width: 2.6em; font-size: 17px; }

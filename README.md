@@ -62,8 +62,11 @@ V0/1 = entre V0 y V1. Como en la fórmula un V0 vale 0, las vías de 5.11b o men
   Tocar un día muestra el detalle completo (bloques, tiempos, ejercicios, objetivo y resultado)
   o la planificación con botón para registrarla.
 - **Registrar:** eliges un día prediseñado (Board, Resistencia, Max boulder, Roca, Físico A/B,
-  Test máximo o Sesión libre) y agregas, quitas o reordenas bloques: calentamiento, fuerza de
-  dedos, board, boulder, resistencia, vías, roca, físico, test máximo u otro.
+  Test máximo o Sesión libre) y agregas, quitas o reordenas bloques. Board, Resistencia y Max
+  boulder parten con: **calentamiento** (40 min: elongación, core, espalda, bloqueos), **fuerza de
+  dedos** (5×5 s half crimp + 5×5 s pinza, con el lastre de tu última sesión) y **boulder de
+  calentamiento** (5 V3 + 2 V4, suma al volumen e intensidad del día). Todos los números se
+  cambian con − / + o tocándolos y escribiendo con el teclado.
 - **Estadísticas:** intensidad diaria (solo días de escalada) o mensual, benchmarks del
   entrenamiento (half crimp, pinza, board, boulder, vías, resistencia) y resumen de tests máximos.
 - **Historial:** sesiones por semana con filtro por tipo.

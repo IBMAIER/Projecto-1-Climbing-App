@@ -7,6 +7,8 @@
 //   guardarSesion(sesion)       crea o actualiza (si trae id)
 //   borrarSesion(id)
 //   escucharPlanes / guardarPlan / borrarPlan   lo mismo para los planes
+//   alCambiarEstado(callback)   estado de sincronización con la nube
+//   datosLocales() / subirDatosLocales()   datos que quedaron en modo local
 //
 // Hay dos implementaciones con la misma interfaz:
 //   - Firebase (Auth + Firestore con copia local para usar sin señal)
@@ -22,6 +24,45 @@ let fb = null;       // módulos de Firebase, cargados solo si se usan
 let auth = null;
 let firestore = null;
 let usuario = null;  // { uid, nombre, email }
+
+// ---------------------------------------------------------------------------
+// Estado de sincronización (para el indicador de la cabecera)
+//   pendientes: hay cambios guardados en este dispositivo que aún no suben
+//   sinConexion: los datos vienen de la copia local, no del servidor
+//   error: el último guardado o lectura que Firebase rechazó
+// ---------------------------------------------------------------------------
+
+const estado = { pendientes: {}, sinConexion: {}, error: null };
+const oyentesEstado = new Set();
+
+export function alCambiarEstado(cb) {
+  oyentesEstado.add(cb);
+  cb(resumenEstado());
+  return () => oyentesEstado.delete(cb);
+}
+
+function resumenEstado() {
+  return {
+    modoLocal,
+    pendientes: Object.values(estado.pendientes).some(Boolean),
+    sinConexion: !navigator.onLine || Object.values(estado.sinConexion).some(Boolean),
+    error: estado.error,
+  };
+}
+
+function avisarEstado() {
+  const r = resumenEstado();
+  oyentesEstado.forEach((cb) => cb(r));
+}
+
+function registrarError(accion, err) {
+  console.error(`Error ${accion}:`, err);
+  estado.error = `${accion}: ${err.code || err.message}`;
+  avisarEstado();
+}
+
+window.addEventListener("online", avisarEstado);
+window.addEventListener("offline", avisarEstado);
 
 // ---------------------------------------------------------------------------
 // Inicio y sesión de usuario
@@ -92,13 +133,26 @@ function escuchar(coleccion, ordenar, callback, alError) {
   }
 
   const ref = fb.collection(firestore, "users", usuario.uid, coleccion);
+  let primera = true;
   // Evento: se dispara al inicio y cada vez que cambian los datos
   // (en este dispositivo o en otro).
+  // includeMetadataChanges: también avisa cuando los cambios pendientes
+  // terminan de subir (para el indicador de sincronización).
   return fb.onSnapshot(
     ref,
-    (snap) => callback(ordenar(snap.docs.map((d) => ({ id: d.id, ...d.data() })))),
+    { includeMetadataChanges: true },
+    (snap) => {
+      estado.pendientes[coleccion] = snap.metadata.hasPendingWrites;
+      estado.sinConexion[coleccion] = snap.metadata.fromCache;
+      avisarEstado();
+      // Solo redibujar si cambiaron los datos (no por cambios de estado).
+      if (primera || snap.docChanges().length) {
+        primera = false;
+        callback(ordenar(snap.docs.map((d) => ({ id: d.id, ...d.data() }))));
+      }
+    },
     (err) => {
-      console.error(`Error leyendo ${coleccion}:`, err);
+      registrarError("leyendo datos", err);
       alError(err);
     }
   );
@@ -124,7 +178,8 @@ function guardar(coleccion, doc) {
   // No se espera (await) la respuesta del servidor: Firestore guarda primero
   // en la copia local y sube el cambio cuando hay señal. Así guardar es
   // instantáneo aunque no haya internet.
-  fb.setDoc(ref, datos).catch((err) => console.error("Error guardando:", err));
+  estado.error = null;
+  fb.setDoc(ref, datos).catch((err) => registrarError("guardando", err));
   return ref.id;
 }
 
@@ -134,7 +189,7 @@ function borrar(coleccion, id) {
     return;
   }
   const ref = fb.doc(firestore, "users", usuario.uid, coleccion, id);
-  fb.deleteDoc(ref).catch((err) => console.error("Error borrando:", err));
+  fb.deleteDoc(ref).catch((err) => registrarError("borrando", err));
 }
 
 export const escucharSesiones = (cb, alError = () => {}) => escuchar("sessions", ordenarSesiones, cb, alError);
@@ -163,4 +218,26 @@ function leerLocal(coleccion) {
 function escribirLocal(coleccion, lista) {
   localStorage.setItem(CLAVES[coleccion], JSON.stringify(lista));
   oyentesLocales.forEach((cb) => cb());
+}
+
+// ---------------------------------------------------------------------------
+// Datos que quedaron en este dispositivo en modo local (antes de conectar
+// Firebase). Se pueden subir a la cuenta conectada.
+// ---------------------------------------------------------------------------
+
+export function datosLocales() {
+  if (modoLocal) return { sesiones: 0, planes: 0 };
+  return { sesiones: leerLocal("sessions").length, planes: leerLocal("plans").length };
+}
+
+export function subirDatosLocales() {
+  for (const coleccion of Object.keys(CLAVES)) {
+    const lista = leerLocal(coleccion);
+    lista.forEach((doc) => guardar(coleccion, doc)); // conserva el id: subir dos veces no duplica
+    if (lista.length) {
+      // Se guarda un respaldo y se vacía la lista local.
+      localStorage.setItem(`${CLAVES[coleccion]}.respaldo`, JSON.stringify(lista));
+      localStorage.removeItem(CLAVES[coleccion]);
+    }
+  }
 }

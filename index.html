@@ -13,8 +13,10 @@
 <body class="sin-usuario">
   <header>
     <span class="marca">🧗 Bitácora <small id="version"></small></span>
-    <span id="usuario"></span>
+    <span class="cabecera-derecha"><span id="sync" class="sync"></span><span id="usuario"></span></span>
   </header>
+
+  <div id="aviso-error" class="aviso-local aviso-error" hidden></div>
 
   <div id="aviso-local" class="aviso-local" hidden>
     Modo local: los datos se guardan solo en este dispositivo hasta conectar Firebase.

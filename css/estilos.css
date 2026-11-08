@@ -402,3 +402,12 @@ nav a { font-size: 11px; }
 .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; margin: 8px 0 16px; }
 .check input { width: 20px; height: 20px; flex: none; }
 nav a { font-size: 10px; }
+
+/* Indicador de sincronización */
+.cabecera-derecha { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.sync { font-size: 11px; font-weight: 600; }
+.sync.ok { color: var(--ok); }
+.sync.pendiente { color: var(--medias); }
+.sync.error { color: var(--peligro); }
+.sync.local { color: var(--suave); }
+.aviso-error { background: color-mix(in srgb, var(--peligro) 15%, var(--fondo)); border-color: var(--peligro); }

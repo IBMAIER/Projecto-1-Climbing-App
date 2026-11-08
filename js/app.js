@@ -37,7 +37,7 @@ let filtroHistorial = "todos";
 // Arranque
 // ---------------------------------------------------------------------------
 
-export const VERSION_APP = "v7";
+export const VERSION_APP = "v8";
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
@@ -62,12 +62,38 @@ db.iniciar(alCambiarUsuario).catch((e) => {
 
 window.addEventListener("hashchange", mostrarPantalla);
 
+// Indicador de sincronización en la cabecera.
+db.alCambiarEstado((e) => {
+  const el = $("#sync");
+  if (!el) return;
+  let texto, clase, titulo;
+  if (e.modoLocal) [texto, clase, titulo] = ["● Solo este dispositivo", "local", "Modo local: los datos no se sincronizan"];
+  else if (e.error) [texto, clase, titulo] = ["● Error al sincronizar", "error", e.error];
+  else if (e.pendientes) [texto, clase, titulo] = ["● Pendiente de subir", "pendiente", "Hay cambios guardados aquí que subirán cuando haya conexión"];
+  else if (e.sinConexion) [texto, clase, titulo] = ["● Sin conexión", "pendiente", "Mostrando la copia guardada en este dispositivo"];
+  else [texto, clase, titulo] = ["● Sincronizado", "ok", "Tus datos están al día con la nube"];
+  el.textContent = texto;
+  el.className = `sync ${clase}`;
+  el.title = titulo;
+  if (e.error) {
+    const aviso = $("#aviso-error");
+    aviso.hidden = false;
+    aviso.textContent = `No se pudo sincronizar con la nube (${e.error}). Revisa tu conexión o las reglas de Firestore.`;
+  } else {
+    $("#aviso-error").hidden = true;
+  }
+});
+
 document.addEventListener("click", (ev) => {
   const b = ev.target.closest("[data-app]");
   if (!b) return;
   const accion = b.dataset.app;
   if (accion === "entrar") db.entrar().catch((e) => alert("No se pudo iniciar sesión: " + e.message));
   if (accion === "salir") db.salir();
+  if (accion === "subir-locales") {
+    db.subirDatosLocales();
+    mostrarPantalla();
+  }
   if (accion === "filtro") {
     filtroHistorial = b.dataset.valor;
     mostrarPantalla();
@@ -255,6 +281,13 @@ function mostrarHoy() {
       pd.descarga ? " · <b>semana de descarga</b>: volumen a la mitad, sin ir al límite" : ""}</p>` : ""}
     ${bloqueHoy}
 
+    ${(() => {
+      const loc = db.datosLocales();
+      if (!loc.sesiones && !loc.planes) return "";
+      return `<div class="tarjeta aviso">📱 En este dispositivo hay ${loc.sesiones} sesiones y ${loc.planes} planes
+        guardados en <b>modo local</b> (de antes de conectar la nube). No se ven en tus otros dispositivos.
+        <button class="primario ancho" data-app="subir-locales" style="margin-top:8px">Subirlos a mi cuenta</button></div>`;
+    })()}
     ${avisos.map((a) => `<div class="tarjeta aviso">⚠️ ${a}</div>`).join("")}
 
     ${pendientes.length ? `
